@@ -1,0 +1,48 @@
+Project update: token-count comparison harness
+
+The goal is not to prove that two vendors use the same tokenizer. The goal is to measure the counts each provider reports for the same controlled input. Anyone who wants to extend the project further is welcome to do so, but the headline claim should remain modest: same text, same prompt, two providers, here are the numbers.
+
+Background
+
+When the project was first scoped, it was unclear whether the providers would expose dedicated count endpoints. Both have since published official counting surfaces, which simplifies the comparison considerably. The harness no longer has to depend on usage fields from inference responses for its primary evidence. That, in turn, makes the comparison cheaper to run, since the count endpoints are free of charge and very fast.
+
+What changed in the last week
+
+- We added a fixture pack covering the top ten programming languages by usage.
+- We separated the controlled-text counts from the full-prompt counts in the JSON output, so prompt overhead is no longer mixed into the headline numbers.
+- We documented the fixtures with a short note on what each one is supposed to stress-test, and linked the fixture index from the README.
+- We replaced the original repetitive long-form fixture with non-repeating prose, which makes the long-fixture numbers more credible.
+- We promoted several of the smaller fixtures to a size that puts them firmly in the signal range, where small per-call noise is no longer a meaningful fraction of the total.
+
+Open questions
+
+1. Do counts diverge more for code than prose? Early observations suggest yes, but the magnitudes are content-dependent and the conclusion may not survive a wider fixture set.
+2. Do Unicode punctuation and symbols create larger gaps? The mixed-punctuation probe is suggestive but, by design, too short to be conclusive.
+3. Does long-form text smooth out small per-sentence differences? The new long-form prose fixture is meant to test exactly this. If the percentage delta on a 6,000-character article matches the delta on a 600-character snippet, the per-sentence noise was not the dominant effect.
+4. Are non-Latin scripts handled the same way across providers? CJK, Arabic, and Devanagari all have known tokenizer-dependent quirks, and a single-line probe is not a sufficient sample.
+5. Does the SDK path add hidden overhead beyond what the count endpoints model? This is the question the optional benchmark script is designed to answer.
+
+Decisions made
+
+- Verification is now the headline workflow. Running the count endpoints alone is the recommended way to reproduce the comparison.
+- The benchmark script remains in the repository as an optional sanity check. It is not part of the default workflow because it incurs API spend.
+- All fixtures are checked into the repository as plain files. There is no fixture generation script. This keeps the comparison deterministic.
+- Results that come from short fixtures are explicitly tagged as probes, not as measurements. Readers of the output table should not draw a percentage-delta conclusion from a fifty-token fixture.
+
+Risks
+
+- A provider may change its tokenizer between releases without changing the user-facing model name. The harness needs to be re-run periodically, and any conclusions need to be dated.
+- The count endpoints are documented slightly differently across providers. Anthropic notes that their count is an estimate. OpenAI documents theirs as exact. We treat both as authoritative for the controlled-text comparison and rely on the optional benchmark to catch any divergence.
+- The fixtures are necessarily a small sample of the surface area a real workload would expose. The honest framing is that the harness measures what it measures, not the universe of inputs.
+
+Next steps
+
+- Add CJK, Arabic, and Devanagari long-form fixtures so the non-Latin claim is supportable.
+- Add a Markdown fixture with realistic structure: headings, fenced code blocks, links, a small table.
+- Add a unified-diff fixture and a stack-trace fixture, both of which are common LLM inputs in coding-agent workflows.
+- Add a scaling-tier fixture per content category so we can see whether deltas grow, shrink, or stay constant with length.
+- Publish the latest results table as a snapshot in the repository, dated, so readers can compare against later snapshots without re-running the harness.
+
+Closing note
+
+This is not a leaderboard project. It is a small, careful effort to put numbers next to a claim people make casually all the time. The claim is "tokens are tokens"; the measurement is what each provider actually reports. The two are not always the same, and saying so politely is most of the point.

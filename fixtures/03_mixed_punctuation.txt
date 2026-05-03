@@ -1,0 +1,1 @@
+Wait—does “tokenization” treat emojis 🤖, smart quotes, CJK text（中文测试）, math-ish strings like x:=Σᵢ aᵢ², URLs https://example.com/a?b=c&d=e, and repeated punctuation?!?! the same way across models?

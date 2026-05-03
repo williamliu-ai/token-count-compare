@@ -1,0 +1,93 @@
+A Long Look at Tokens, Costs, and the Quiet Plumbing of Modern Language Models
+
+Introduction
+
+Tokens are the unit of account that everyone using a large language model relies on, and that almost no one looks at directly. They appear at the bottom of usage dashboards, in the footers of pricing pages, and in the dry small print of API documentation. They are what context windows are measured in. They are what bills are computed from. And yet, for most of the people who use these systems day to day, the precise rules by which a piece of text becomes a number of tokens are an opaque, almost ceremonial detail.
+
+This article is a long, deliberate look at that detail. It is not a comparison of models, and it is not a recommendation for one provider over another. It is closer to a field note: an attempt to describe, in plain language, what tokens are, why they are not the same across systems, and how a careful team can measure that variation without buying anyone's spin.
+
+Part one: a working definition
+
+A token is, at its most concrete, a string of bytes that a particular model has decided to treat as a single unit. The decision is made during model training, not during inference. By the time a request reaches a hosted API, the rule that maps text to tokens is fixed. It does not adapt to the user's input. It does not adjust based on context. It is a property of the model, baked in before the user ever opened a chat window.
+
+The mapping from text to tokens is implemented by an algorithm called a tokenizer. There are several common families, with byte-pair encoding and its variants by far the most popular for modern transformer models. The algorithm starts from a vocabulary of common subword units, and it greedily merges runs of characters into tokens until no more merges apply. The vocabulary itself is learned from a corpus during training, which means that two providers with similar but not identical training data will end up with subtly different vocabularies. The vocabularies will agree on common English words. They will diverge on rare words, on code identifiers, on Unicode punctuation, and on any pattern that one provider's training data emphasized more than the other's.
+
+Part two: why the differences are usually small
+
+For ordinary English prose, two modern tokenizers usually produce counts that are within a few percent of each other. The reason is not coordination. It is convergence. The vocabulary of common English is dense enough that any reasonable subword algorithm trained on a large corpus will learn most of the same subword units. The article "the" is a single token in essentially every modern tokenizer. The word "tokenization" is one or two tokens, depending on the vocabulary. Compound words like "context-aware" or hyphenated phrases like "long-form" may split slightly differently, but the resulting count rarely deviates from the others by more than a token or two.
+
+This convergence is good news for anyone trying to forecast costs across providers. It means the broad picture is consistent. A document that takes a thousand tokens at one provider will take roughly a thousand tokens at another. The error in that estimate is typically small enough that capacity planning, retrieval-budgeting, and rate-limiting can proceed without obsessing over the difference.
+
+Part three: where the differences become significant
+
+The differences become significant in three places. The first is code. Code is dense in identifiers, punctuation, and patterns that are far rarer in ordinary text than they are in a programmer's editor. The exact way a tokenizer splits camelCase, snake_case, kebab-case, repeated punctuation, and language-specific keywords varies meaningfully between providers. A long source file that is well within a context window for one provider can be slightly outside that window for another.
+
+The second is Unicode. CJK text, Arabic, Devanagari, and many other non-Latin scripts are tokenized differently across providers. Some tokenizers represent these scripts at a per-character level, which can dramatically inflate the token count compared to what a human reader would expect. Others learn larger subword units for common scripts and produce counts closer to what a Latin-script reader would predict from sentence length. The practical consequence is that two systems that look similar on English text can differ by a factor of two or more on the same content in another script.
+
+The third is special characters and structural noise. Repeated punctuation, math symbols, emoji sequences, and zero-width joiners all behave inconsistently across tokenizers. A single emoji can take one token in one tokenizer and four in another. A Markdown table can come out leaner in one provider and denser in another, depending on whether the tokenizer has learned the table-related runs of pipes and dashes as common subwords.
+
+Part four: why this matters in production
+
+It is tempting to dismiss small token-count differences as a minor accounting curiosity. The dismissal is reasonable for any individual request. It is less reasonable for a system processing many requests per second, every day, for years.
+
+Consider a customer support agent that summarizes long email threads for human reviewers. The thread length varies, the language varies, the formatting varies. A tokenizer that handles long-form English prose efficiently may handle the same thread, written in a different language, less efficiently. Over the course of a year, with hundreds of thousands of threads, the cumulative cost difference can be material. The difference will not be a single, easily attributable line item. It will be a quiet, persistent gap between what was forecast and what was billed.
+
+Consider a coding assistant whose context budget is tuned to fit a typical source file plus its tests. If the assistant migrates to a provider whose tokenizer is slightly less compact on code, the same source file may now displace the tests. The user does not see a tokenizer change. The user sees a coding assistant that, since some recent update, has started missing things it used to catch.
+
+Consider a document-processing pipeline that extracts text from PDFs, chunks it for retrieval, and embeds each chunk. If the chunker assumes a fixed character-to-token ratio, and the underlying tokenizer changes, the chunks may end up too large or too small for the retrieval index to work well. The relevance scores will drift, and the only symptom will be slightly worse answers.
+
+In each case, the failure mode is invisible. There is no error message. There is no alert. There is just a slow, ambient degradation that may take weeks or months to notice and that may never be properly attributed to its cause.
+
+Part five: the count endpoints
+
+The good news is that both major chat-model providers now expose a way to count tokens directly, without running an inference. These endpoints take a piece of text or a structured chat shape and return the number of tokens that input would consume. They are typically free of charge. They are typically very fast, far faster than any inference. They are documented as either exact or near-exact, depending on the provider.
+
+For practical purposes, these endpoints are the right tool for understanding tokenization behavior. They are the right tool for estimating per-request cost before deploying a system. They are the right tool for monitoring whether a tokenizer change has slipped in alongside a model update. They are the right tool for cross-provider comparisons of the kind this project documents.
+
+The thing to be careful about is that the count endpoints do not always reflect the full overhead of the actual API call. A real chat API request includes structural framing that the bare count of input text may not capture. The honest version of any cross-provider comparison reports both: the count of the controlled text alone, and the count of the full request payload that the model will actually see. The two numbers tell different stories. The first is about tokenizer behavior on text. The second is about the full cost a user will pay for that text.
+
+Part six: how to measure responsibly
+
+Measurement is mostly an exercise in discipline. The discipline is to use the same controlled text across providers, to use the same comparison methodology across runs, and to label the results with the dates and model identifiers used. None of these steps are individually difficult. Together they are what separates a defensible comparison from a casual one.
+
+First, use real workloads. Synthetic fixtures are useful for demonstrating tokenization behavior on edge cases, and they are useful for reproducible comparisons across teams. They are not, by themselves, a substitute for measuring the data you actually plan to send. Almost every team that takes the trouble to measure their own data finds something specific to that data that the synthetic fixtures missed.
+
+Second, separate signals from probes. A short fixture is useful for stressing an edge case, but its percentage delta is unstable. A token or two of difference can swing the percentage by several points. Long fixtures produce stable percentages but require non-repetitive content; otherwise the tokenizer's vocabulary effectively memorizes the repetition and produces an unrepresentative count.
+
+Third, document the dates. Tokenizers can change between model releases. They can change without changing the user-facing model name. A measurement made in January may not match a measurement made in May, and the cause may be a quiet provider-side update rather than anything the user did. The fix is to repeat measurements periodically and to publish the dates alongside the numbers.
+
+Fourth, do not over-interpret. The point of a careful comparison is to give a team data that helps them make better decisions. The point is not to pick a winner. Two providers can produce different counts on the same input and both can be entirely truthful. The right response to that observation is to measure your own workload, on the providers you are actually considering, and to act on the measurement.
+
+Part seven: what to do with the numbers
+
+Once a team has measured token counts across providers on representative content, what should they do with the numbers? In broad terms, three things.
+
+The first is to inform forecasts. Any cost forecast that assumes a single character-to-token ratio across providers is implicitly assuming the providers tokenize the same way. The forecast can be refined by computing per-provider ratios from the measured data and applying them to the projected workload. The refinement does not need to be elaborate. A small spreadsheet column per provider is enough.
+
+The second is to inform retrieval and chunking decisions. If a retrieval pipeline is designed to fit a fixed number of chunks into a context window, the chunk size should be tuned per provider. The tuning can often be automated by computing the chunk size from the per-provider count endpoint at indexing time, rather than at query time. The result is that the retrieval system stays close to its target fill ratio across providers, even when the underlying tokenizer changes.
+
+The third is to inform monitoring. A small dashboard that tracks the token count of representative inputs across providers, dated and updated weekly, is enough to catch most tokenizer changes within a few days of their introduction. The dashboard does not need to alert on small drifts. It only needs to be visible to the people who would otherwise be surprised by them.
+
+Part eight: a closing observation
+
+The work of comparing token counts is not glamorous. It is the kind of careful measurement that does not produce a striking headline and does not earn a spot on a leaderboard. The measurements are usually small numbers, and the differences are usually small. A casual reader could be forgiven for asking whether the work is worth doing at all.
+
+The argument for doing the work anyway is, in the end, the argument for any kind of routine measurement. Small differences accumulate. Bounded effects can still be the deciding factor in a tight bid. Public habits of measurement push providers toward documentation, toward stable behavior, toward useful counting endpoints. The article that quotes a token-count comparison politely is, in a small way, raising the floor for everyone who depends on these systems.
+
+The hope of this fixture, and of the project that contains it, is to make that habit cheap and routine. The count endpoints are free. The fixtures are static. The methodology is documented. The only thing left is to run the measurement, repeat it on a schedule, and let the numbers speak for themselves. They will not say much, and they will not always be interesting. But over time, in the corner of any team that bothers to look, they will quietly accumulate into the kind of evidence that makes good decisions a little easier to defend.
+
+Part nine: a note on terminology
+
+Throughout this article, the word "token" has been used in its operational sense: the unit of account a hosted API uses to bill input and output. This is not the only sense in which the word is used. In the broader literature on natural language processing, "token" can refer to a word, a subword unit, a character, or any of several intermediate representations. In linguistics, the word has a different and older meaning, related to the type-token distinction that long predates computational language models.
+
+The operational sense is the one that matters for the practical concerns of this project. When this article talks about a token, it means a unit that a particular hosted API has decided to treat as a single billable element. Two such tokens, from two different APIs, are not directly comparable. They are unit-of-account categories, not physical objects.
+
+This may seem like a pedantic note, but it has consequences. It is the reason "the same paragraph" can produce different numbers on different APIs. The paragraph is the same. The unit of account is not. The whole point of running a comparison is to make that distinction visible, so that downstream decisions can be based on the actual numbers rather than on the implicit assumption that tokens are universal.
+
+Part ten: an honest summary
+
+If a reader took only one paragraph from this article, the right paragraph to take is this. Token counts are a property of the model, not the text. Two systems can read identical paragraphs and report different numbers, and both systems can be entirely truthful. The right response is not to choose a side. It is to measure the workloads you actually care about, on the providers you are actually considering, and to treat the resulting numbers as data points rather than universal truths.
+
+The measurement is small work. The discipline of doing it before drawing conclusions is the harder part, and the more valuable one. With a little patience and a few free count-endpoint calls, any team can know with confidence what their inputs cost across providers. That knowledge will not solve every cross-provider question. It will solve a particular class of quiet, easily missed surprises that, in aggregate, decide the difference between a system that scales gracefully and one that drifts.
+
+This long fixture exists, in the end, to give a tokenization benchmark something realistic to measure. It is intentionally non-repetitive. It is intentionally varied in topic and cadence. It is intentionally written at a length that puts it firmly in the scaling tier, where small per-call differences are no longer a meaningful fraction of the total. Read straight through, it is a long but coherent essay. Read by a tokenizer, it is a long sequence of subword units, segmented in a way that is the property of the model, not the text. The honest comparison reports both.

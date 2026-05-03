@@ -1,0 +1,18 @@
+Extracted PDF-style text blob
+=============================
+
+Title: A Brief Note on Comparing Token Accounting
+Authors: Example Research Group
+
+Abstract—Token counts reported by hosted model APIs may include provider-specific chat formatting, invisible separators, or safety/system framing. A fair comparison should therefore use identical user-controlled text, stable prompts, and repeated runs.
+
+1. Introduction
+Tokenization is not merely splitting on whitespace. Numbers, Unicode punctuation, code identifiers, and rare symbols can produce very different segmentations.
+
+2. Method
+We submit the same text payload to each model and record reported input tokens separately from output tokens.
+
+3. Result Template
+Model A input tokens: ____
+Model B input tokens: ____
+Difference: ____

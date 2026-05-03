@@ -1,0 +1,76 @@
+Specification: Token Count Verification Harness
+
+1. Scope
+
+This specification defines the behavior, inputs, and outputs of the token-count verification harness. It applies to a fixed set of fixture files and a small number of provider-side counting endpoints. It does not specify the underlying tokenization algorithms, model identities, or vendor pricing, all of which are out of scope and may change without notice.
+
+2. Conformance language
+
+The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY in this document are to be interpreted as described in RFC 2119, regardless of capitalization in the surrounding prose.
+
+3. Fixtures
+
+3.1. The harness MUST read each fixture file as UTF-8 without any whitespace normalization, line-ending conversion, or character substitution.
+
+3.2. The harness MUST present the contents of each fixture file unchanged to each provider count endpoint.
+
+3.3. The harness MUST NOT summarize, transform, paraphrase, translate, or otherwise rewrite fixture text before counting.
+
+3.4. The harness MAY exclude files whose extensions are not listed in the configured FIXTURE_EXTENSIONS set. Excluded files MUST NOT appear in the output report.
+
+3.5. The harness SHOULD process fixtures in lexicographic order so that two runs over the same directory produce stable case ordering.
+
+4. Counting
+
+4.1. For each fixture, the harness MUST request a provider-reported input-token count from each configured provider for the controlled fixture text.
+
+4.2. The harness SHOULD additionally request a count for the full benchmark prompt when validating an existing benchmark run, but MUST NOT include the full prompt count when no benchmark report is provided unless the operator explicitly opts in.
+
+4.3. The harness MAY request a secondary count using a local tokenizer library, when one is available for the configured model. Local-tokenizer counts MUST be reported separately from provider counts and MUST NOT be presented as the primary baseline.
+
+4.4. If a count endpoint returns an error, the harness MUST record the error string in the output report and MUST set the corresponding token field to null. It MUST NOT silently substitute a default value.
+
+5. Reporting
+
+5.1. The output report MUST include the following fields per case: file name, character length, UTF-8 byte length, the controlled-text count for each provider, and the deltas between providers where both counts are available.
+
+5.2. The report SHOULD include a size_tier field for each case, classifying the fixture as probe, signal, or scaling based on observed token counts. The size_tier MAY be derived from any combination of input characters, bytes, or reported tokens, provided the derivation rule is documented.
+
+5.3. The report MUST distinguish between counts of the controlled fixture text and counts of any wrapped or templated prompt that was actually sent to a model. These two surfaces MUST be reported separately.
+
+5.4. The report SHOULD include a recommendation block summarizing the recommended primary baseline for each provider and the conditions under which secondary baselines are appropriate.
+
+6. Cost discipline
+
+6.1. The default verification workflow MUST NOT issue any chargeable inference request. The provider count endpoints used in the default workflow MUST be those documented as free of charge by their respective providers at the time of release.
+
+6.2. Inference-based validation SHOULD be available as an opt-in mode for operators who wish to confirm that a count endpoint matches actual billed usage. Inference-based validation MUST NOT be enabled by default.
+
+6.3. The harness MUST display a clear estimate of any chargeable activity it is about to perform before that activity begins, when running in an interactive mode. In a non-interactive mode, the harness MAY skip the estimate but MUST still log the chargeable activity.
+
+7. Reproducibility
+
+7.1. The harness MUST be deterministic given identical fixtures, identical configuration, and identical provider model snapshots.
+
+7.2. The harness SHOULD NOT mutate any fixture file at runtime. Fixture files are inputs only.
+
+7.3. The harness SHOULD timestamp each output report and record the exact provider model identifiers used for the run.
+
+7.4. Re-running the harness over the same fixtures MUST produce stable counts unless a provider has changed model accounting between runs. A provider-side change is the only acceptable cause of a cross-run delta.
+
+8. Failure modes
+
+8.1. Missing credentials MUST result in explicit per-provider error entries in the report. The harness MUST NOT exit with a success status when credentials for a configured provider are missing.
+
+8.2. Network failures, rate-limit responses, or other transient errors MUST be recorded as errors. The harness MAY retry idempotent count requests a small, fixed number of times before recording the error.
+
+8.3. A fixture that exceeds a provider's documented input limit SHOULD be flagged in the report and SHOULD NOT be silently truncated.
+
+9. Acceptance criteria
+
+The implementation is considered conformant when:
+
+- Re-running the harness over an unchanged fixture directory and unchanged provider model snapshots produces identical reports modulo timestamps.
+- Missing credentials do not cause a false-success report.
+- The default workflow incurs no chargeable activity, as observed against the providers' usage dashboards.
+- The optional inference-based validation workflow correctly records both reported and provider-counted token counts and reports their delta.

@@ -1,0 +1,82 @@
+Composite stack-trace fixture. Three traces from three different runtimes,
+the kind of input a coding-agent often receives when a user pastes an
+error log into a chat. Names and paths have been generalized.
+
+--- Python traceback ---
+
+Traceback (most recent call last):
+  File "/srv/app/cli/run.py", line 142, in <module>
+    sys.exit(main())
+  File "/srv/app/cli/run.py", line 116, in main
+    report = run_pipeline(args.fixtures, args.out, args.tolerance)
+  File "/srv/app/cli/run.py", line 84, in run_pipeline
+    counts = collect_counts(fixtures, providers)
+  File "/srv/app/core/collector.py", line 48, in collect_counts
+    return [count_one(fx, providers) for fx in fixtures]
+  File "/srv/app/core/collector.py", line 48, in <listcomp>
+    return [count_one(fx, providers) for fx in fixtures]
+  File "/srv/app/core/collector.py", line 71, in count_one
+    return {p.name: p.count(fx.text) for p in providers}
+  File "/srv/app/core/collector.py", line 71, in <dictcomp>
+    return {p.name: p.count(fx.text) for p in providers}
+  File "/srv/app/providers/anthropic_provider.py", line 56, in count
+    response = self._client.messages.count_tokens(model=self.model, messages=msgs)
+  File "/usr/lib/python3.12/site-packages/anthropic/_resources/messages.py", line 311, in count_tokens
+    return self._post("/v1/messages/count_tokens", body={"model": model, "messages": messages})
+  File "/usr/lib/python3.12/site-packages/anthropic/_base_client.py", line 1142, in _post
+    return self._request(method="post", url=url, **kwargs)
+  File "/usr/lib/python3.12/site-packages/anthropic/_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(response)
+anthropic.RateLimitError: Error code: 429 - {"error": {"type": "rate_limit_error", "message": "rate limit exceeded for messages/count_tokens"}}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/srv/app/cli/run.py", line 121, in main
+    report = run_pipeline(args.fixtures, args.out, args.tolerance)
+  File "/srv/app/cli/run.py", line 91, in run_pipeline
+    raise PipelineError("count phase failed; see logs for details") from None
+core.errors.PipelineError: count phase failed; see logs for details
+
+--- Node.js stack ---
+
+UnhandledPromiseRejection: This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch().
+
+TypeError: Cannot read properties of undefined (reading 'input_tokens')
+    at countViaResponses (/srv/app/src/providers/openai.js:88:35)
+    at processFixture (/srv/app/src/core/collector.js:42:29)
+    at async runPipeline (/srv/app/src/core/runner.js:71:21)
+    at async main (/srv/app/src/cli/run.js:34:17)
+    at async file:///srv/app/src/cli/run.js:46:5
+    at async ModuleJob.run (node:internal/modules/esm/module_job:217:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:316:24)
+    at async loadESM (node:internal/process/esm_loader:34:7)
+    at async handleMainPromise (node:internal/modules/run_main:113:12)
+
+--- Java stack ---
+
+Exception in thread "main" com.example.tokens.providers.ProviderException: count_tokens failed for fixture 04_long_form.txt
+    at com.example.tokens.providers.AnthropicProvider.count(AnthropicProvider.java:142)
+    at com.example.tokens.core.Collector.lambda$collectCounts$0(Collector.java:67)
+    at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+    at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625)
+    at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+    at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+    at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+    at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+    at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+    at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+    at com.example.tokens.core.Collector.collectCounts(Collector.java:65)
+    at com.example.tokens.cli.Run.main(Run.java:48)
+Caused by: java.net.SocketTimeoutException: Read timed out
+    at java.base/java.net.SocketInputStream.socketRead0(Native Method)
+    at java.base/java.net.SocketInputStream.socketRead(SocketInputStream.java:115)
+    at java.base/java.net.SocketInputStream.read(SocketInputStream.java:168)
+    at java.base/sun.security.ssl.SSLSocketInputRecord.read(SSLSocketInputRecord.java:478)
+    at java.base/sun.security.ssl.SSLSocketInputRecord.readHeader(SSLSocketInputRecord.java:472)
+    at java.base/sun.security.ssl.SSLSocketInputRecord.bytesInCompletePacket(SSLSocketInputRecord.java:70)
+    at java.base/sun.security.ssl.SSLSocketImpl.readApplicationRecord(SSLSocketImpl.java:1465)
+    at java.base/sun.security.ssl.SSLSocketImpl$AppInputStream.read(SSLSocketImpl.java:1062)
+    ... 23 more
+
+End of composite trace fixture.

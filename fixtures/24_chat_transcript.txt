@@ -1,0 +1,41 @@
+Transcript: customer support session, anonymized
+Channel: web chat
+Duration: 14 minutes 22 seconds
+Language: English
+
+User: Hi, I'm trying to figure out why my last invoice was higher than the previous one. Nothing about my usage feels different.
+Agent: Hello, thanks for reaching out. I can help with that. Could you confirm the account email so I can pull the right billing record?
+User: It's the same one I used to log in.
+Agent: Got it, one moment. I see two invoices on file: one from March and one from April. The April invoice is about 18% higher. Would you like to walk through that together?
+User: Yes please. I didn't change anything on my side, so I'm a bit confused.
+Agent: Understood. There are usually three reasons a bill goes up without an obvious change in usage. Either the volume of inputs grew, the inputs got more expensive per token, or both. We'll check each.
+User: Sounds good.
+Agent: First, the request count. In March you logged 12,400 requests. In April you logged 12,920. That's about 4% higher. Not the main story, but worth noting.
+User: Yeah, that tracks. We had a busy week mid-April.
+Agent: The bigger contributor is average tokens per request. In March that was 612 tokens. In April it was 728. That's 19% higher and explains most of the bill.
+User: Interesting. Why would that be? We send roughly the same kinds of messages.
+Agent: A few possibilities. Did you change the system prompt or any of the wrapper instructions?
+User: We added one paragraph in late March. About 80 words.
+Agent: That alone would add roughly 100 tokens to every request, which over 12,000 requests is more than a million extra tokens billed. Compounded over the month, that's a meaningful share of the increase.
+User: Ouch. We didn't think of that.
+Agent: It is one of the most common causes of unexpected bill growth. The fix is straightforward: trim the system prompt to what is essential, and consider whether any of the wrapper text could be moved client-side instead of sent to the model.
+User: That makes sense. Are there other things we can do?
+Agent: Yes, three suggestions. First, use the count_tokens endpoint to estimate request size before sending. It is free and very fast. Second, set a per-request token budget on your client and refuse to send requests that exceed it. Third, consider running the more verbose prompt only on a small sample of traffic, then comparing answer quality with the leaner version.
+User: Good ideas. Is there a way to get an alert if average tokens per request goes up suddenly?
+Agent: Yes. The dashboard supports a per-day average tokens view, and you can set a threshold alert on it. I can send you the link to configure that after this chat.
+User: Yes please.
+Agent: Done, you'll get the link in the follow-up email. One more thing on the April invoice: we ran a small price update mid-month for one of the higher tiers, which contributes the remaining 4 to 5% of the increase.
+User: That's worth knowing too. Was there a notice for that?
+Agent: Yes, it was sent on April 4th. I'll include the original notification in the email so you can confirm.
+User: Thanks. Last question: if I trim the prompt, can I expect the bill to come down by the same percentage next month?
+Agent: Approximately, yes, assuming similar request volume. The two factors are largely independent: smaller per-request inputs lower token usage, and the price tier only changes if you cross a volume threshold. If you want, I can do a back-of-envelope projection based on the trimmed prompt size.
+User: Sure, that would be helpful.
+Agent: If you trim the wrapper from 80 words to about 30, that saves roughly 70 tokens per request. Over 12,000 requests, that's about 840,000 tokens, which at the current rate is around the size of the increase you saw this month.
+User: Perfect. That's exactly the answer I wanted.
+Agent: Glad to help. To summarize: the April increase was mostly driven by a longer wrapper prompt added late March, plus a small price tier update mid-April. Trim the wrapper, set a per-request budget, and turn on the daily average alert. The follow-up email will have the alert link and the price update notice.
+User: Thanks, that was really clear.
+Agent: You're welcome. Anything else I can help with today?
+User: No, that was it.
+Agent: Have a good day.
+
+End of transcript.

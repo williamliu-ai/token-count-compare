@@ -1,0 +1,38 @@
+2026-04-30T18:30:01.124Z INFO  api.gateway   request_id=req_01HX4QJ6 method=POST path=/v1/messages status=200 duration_ms=842 input_tokens=1024 output_tokens=128 model=claude-opus-4-7 user=u_3812
+2026-04-30T18:30:01.418Z INFO  api.gateway   request_id=req_01HX4QJ7 method=POST path=/v1/responses status=200 duration_ms=611 input_tokens=982 output_tokens=64 model=gpt-5.5 user=u_3812
+2026-04-30T18:30:02.002Z WARN  api.gateway   request_id=req_01HX4QJ8 method=POST path=/v1/messages status=429 duration_ms=8 retry_after_ms=1500 model=claude-opus-4-7 user=u_4471 reason="rate_limit_per_minute"
+2026-04-30T18:30:02.510Z INFO  api.gateway   request_id=req_01HX4QJ9 method=POST path=/v1/messages/count_tokens status=200 duration_ms=42 input_tokens=312 model=claude-opus-4-7 user=u_3812
+2026-04-30T18:30:02.911Z INFO  api.gateway   request_id=req_01HX4QJA method=POST path=/v1/responses/input_tokens status=200 duration_ms=37 input_tokens=308 model=gpt-5.5 user=u_3812
+2026-04-30T18:30:03.221Z ERROR worker.embed  request_id=req_01HX4QJB step=embed batch_size=32 error="upstream_timeout" elapsed_ms=30001 endpoint=https://api.example.com/v1/embeddings
+2026-04-30T18:30:03.225Z INFO  worker.embed  request_id=req_01HX4QJB action=retry attempt=1 of=3 backoff_ms=500
+2026-04-30T18:30:03.755Z INFO  worker.embed  request_id=req_01HX4QJB step=embed batch_size=32 status=ok duration_ms=512
+2026-04-30T18:30:04.014Z DEBUG cache.tokens  request_id=req_01HX4QJC action=hit key="auth:u_3812" age_ms=12421 ttl_ms=30000
+2026-04-30T18:30:04.103Z DEBUG cache.tokens  request_id=req_01HX4QJD action=miss key="auth:u_5099" reason="ttl_expired"
+2026-04-30T18:30:04.115Z DEBUG cache.tokens  request_id=req_01HX4QJD action=fetch source="vault://prod/tokens/u_5099" duration_ms=12
+2026-04-30T18:30:04.130Z INFO  cache.tokens  request_id=req_01HX4QJD action=store key="auth:u_5099" ttl_ms=30000
+2026-04-30T18:30:04.401Z INFO  api.gateway   request_id=req_01HX4QJE method=POST path=/v1/messages status=200 duration_ms=1204 input_tokens=4096 output_tokens=1024 model=claude-opus-4-7 user=u_5099
+2026-04-30T18:30:04.502Z WARN  api.gateway   request_id=req_01HX4QJF method=POST path=/v1/responses status=400 duration_ms=14 model=gpt-5.5 user=u_4471 reason="context_length_exceeded" claimed_tokens=412000 limit=400000
+2026-04-30T18:30:05.030Z INFO  api.gateway   request_id=req_01HX4QJG method=GET  path=/v1/usage status=200 duration_ms=18 user=u_admin0
+2026-04-30T18:30:05.611Z INFO  api.gateway   request_id=req_01HX4QJH method=POST path=/v1/messages status=200 duration_ms=722 input_tokens=712 output_tokens=288 model=claude-opus-4-7 user=u_2003
+2026-04-30T18:30:06.001Z INFO  worker.batch  request_id=req_01HX4QJI step=load fixtures=21 directory="fixtures/" total_chars=174203 total_bytes=174312
+2026-04-30T18:30:06.122Z INFO  worker.batch  request_id=req_01HX4QJI step=count provider=anthropic endpoint=count_tokens calls=21 successes=21 errors=0
+2026-04-30T18:30:06.244Z INFO  worker.batch  request_id=req_01HX4QJI step=count provider=openai endpoint=responses.input_tokens.count calls=21 successes=21 errors=0
+2026-04-30T18:30:06.245Z INFO  worker.batch  request_id=req_01HX4QJI step=summarize cases=21 deltas_present=21 cost_usd=0.0
+2026-04-30T18:30:06.305Z INFO  worker.batch  request_id=req_01HX4QJI step=write path="results/verification.json" bytes=84112
+2026-04-30T18:30:06.310Z INFO  worker.batch  request_id=req_01HX4QJI status=ok duration_ms=309
+2026-04-30T18:30:07.918Z INFO  api.gateway   request_id=req_01HX4QJJ method=POST path=/v1/messages status=200 duration_ms=512 input_tokens=82 output_tokens=12 model=claude-opus-4-7 user=u_3812
+2026-04-30T18:30:08.115Z ERROR api.gateway   request_id=req_01HX4QJK method=POST path=/v1/responses status=500 duration_ms=2104 model=gpt-5.5 user=u_4477 reason="upstream_5xx" upstream_status=503
+2026-04-30T18:30:08.120Z INFO  api.gateway   request_id=req_01HX4QJK action=retry attempt=1 of=2 backoff_ms=200
+2026-04-30T18:30:08.330Z INFO  api.gateway   request_id=req_01HX4QJK method=POST path=/v1/responses status=200 duration_ms=412 input_tokens=2048 output_tokens=512 model=gpt-5.5 user=u_4477
+2026-04-30T18:30:09.001Z INFO  api.gateway   request_id=req_01HX4QJL method=POST path=/v1/messages status=200 duration_ms=918 input_tokens=8192 output_tokens=2048 model=claude-opus-4-7 user=u_2003
+2026-04-30T18:30:09.114Z INFO  api.gateway   request_id=req_01HX4QJM method=POST path=/v1/messages status=200 duration_ms=302 input_tokens=128 output_tokens=8 model=claude-opus-4-7 user=u_3812
+2026-04-30T18:30:09.500Z INFO  metrics.export period_seconds=60 requests=412 errors=3 p50_ms=611 p95_ms=1820 p99_ms=3120 cost_usd_running=42.18
+2026-04-30T18:30:09.601Z INFO  metrics.export period_seconds=60 input_tokens_total=2410488 output_tokens_total=410211 by_model="claude-opus-4-7=1812301,gpt-5.5=598187"
+2026-04-30T18:30:10.011Z DEBUG cache.tokens  action=evict key="auth:u_4471" reason="lru" entries_remaining=2412
+2026-04-30T18:30:10.812Z INFO  api.gateway   request_id=req_01HX4QJN method=POST path=/v1/messages status=200 duration_ms=688 input_tokens=624 output_tokens=120 model=claude-opus-4-7 user=u_3812
+2026-04-30T18:30:11.020Z INFO  api.gateway   request_id=req_01HX4QJO method=POST path=/v1/responses status=200 duration_ms=502 input_tokens=611 output_tokens=88 model=gpt-5.5 user=u_3812
+2026-04-30T18:30:11.612Z WARN  api.gateway   request_id=req_01HX4QJP method=POST path=/v1/messages status=400 duration_ms=11 model=claude-opus-4-7 user=u_4477 reason="invalid_request" detail="messages[0].content must be non-empty"
+2026-04-30T18:30:12.008Z INFO  scheduler     job_id=verify_token_counts cron="0 */6 * * *" started_at=2026-04-30T18:30:12Z
+2026-04-30T18:30:12.310Z INFO  scheduler     job_id=verify_token_counts step=run completed_in_ms=302 status=ok cost_usd=0.0
+2026-04-30T18:30:13.001Z INFO  scheduler     job_id=verify_token_counts step=publish target="results/snapshot-2026-04-30.json" status=ok bytes=84112
+2026-04-30T18:30:13.408Z INFO  scheduler     job_id=verify_token_counts finished_at=2026-04-30T18:30:13Z status=ok

@@ -1,0 +1,27 @@
+Rewrite the following short article draft for a technically curious audience. Preserve the core claims, improve the structure, and keep the tone calm rather than promotional.
+
+Style notes:
+- Aim for clear topic sentences. Each paragraph should answer a specific question.
+- Replace soft phrases like "AI is changing everything" with concrete observations.
+- Keep sentence length varied. Short sentences carry weight; long ones carry texture.
+- Where the draft says "users", clarify whether the audience is consumers, developers, or operators.
+- Where the draft makes a claim about cost or latency, mention the conditions under which the claim holds.
+- Do not add citations or fabricate sources. If a claim cannot stand on its own, soften it or remove it.
+
+Length target: similar to the draft. Do not pad. If a section reads as redundant, cut it.
+
+Draft:
+
+Modern AI systems are often compared by benchmark scores, but daily usefulness depends on smaller details: how much context fits, how consistently the model follows constraints, and how expensive it is to process long inputs. Token counts are one of those invisible details. Two models can read the same paragraph and account for it differently, which changes cost, latency, and whether a document fits in the context window.
+
+Most discussions of AI compare leaderboards. The leaderboards are convenient because they reduce a complex system to a single number, and the number can be dropped into a slide. But the people who actually deploy these systems rarely care about the leaderboard. They care about whether the model can read the customer's email without truncation, follow the operator's instructions when the user pushes back, and produce an answer fast enough that the page does not feel broken. Each of these concerns has its own quiet plumbing, and tokens are part of that plumbing.
+
+Consider a simple example. A team builds a retrieval-augmented chatbot that includes the top five matching documents in every query. They tune the prompt, they tune the chunk size, and they confirm that the typical query fits comfortably within the model's context window. Then they switch providers, hoping for a small price improvement. The same five chunks now consume more tokens, because the new provider's tokenizer accounts for code blocks, dates, and product names differently. Suddenly only four of the five chunks fit. The retrieval quality drops, the support team starts seeing more confused replies, and the cost-per-conversation does not improve as much as the headline price suggested.
+
+This is not anyone's fault. It is the natural consequence of treating tokens as if they were universal. The number on a pricing page is in tokens, but the conversion from text to tokens is a property of the model, not the text. Two providers can be entirely honest about their per-token price and still produce different bills for the same workload.
+
+The good news is that most providers now expose a way to count tokens directly, without running an inference. Both major chat providers offer endpoints that take an input string and return the number of tokens that string would consume. These endpoints are typically free of charge and very fast. They are the right tool for measuring tokenization behavior on real workloads before committing to a provider, and they are the right tool for monitoring whether a tokenizer change has slipped in alongside a model update.
+
+What this implies for teams running production systems is small but meaningful: do not rely on a single conversion factor between characters and tokens. Measure the workloads that actually flow through your system, on the providers you are actually considering. If the difference is negligible, you have learned something. If the difference is meaningful, you have caught it before it shows up in an invoice or a context-overflow incident.
+
+The point of this article is not to argue that one tokenizer is better than another. The differences are usually too small to justify a strong claim. The point is that "the same paragraph" does not mean "the same number of tokens", and that quietly held assumption is worth checking once, by hand, with each provider you depend on.

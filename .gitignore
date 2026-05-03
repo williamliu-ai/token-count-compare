@@ -1,0 +1,14 @@
+# Local secrets
+.env
+.env.*
+.env~
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local runtime artifacts
+logs/
+results/

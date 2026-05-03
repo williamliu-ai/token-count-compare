@@ -1,0 +1,1557 @@
+{
+  "schema_version": "2026-04-30",
+  "generated_at": "2026-04-30T22:55:00Z",
+  "purpose": "Scaling-tier structured-data fixture for the token-count-compare project.",
+  "models": [
+    {
+      "id": "claude-opus-4-7",
+      "vendor": "anthropic",
+      "context_window": 1000000,
+      "pricing_usd_per_million": {
+        "input": 15.0,
+        "output": 75.0
+      },
+      "endpoints": {
+        "messages": "/v1/messages",
+        "count_tokens": "/v1/messages/count_tokens"
+      },
+      "tokenizer_notes": "count_tokens documented as estimate; may differ slightly from create-message usage"
+    },
+    {
+      "id": "gpt-5.5",
+      "vendor": "openai",
+      "context_window": 400000,
+      "pricing_usd_per_million": {
+        "input": 12.5,
+        "output": 60.0
+      },
+      "endpoints": {
+        "responses": "/v1/responses",
+        "input_tokens_count": "/v1/responses/input_tokens"
+      },
+      "tokenizer_notes": "input_tokens.count returns the exact input count for the Responses API"
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "vendor": "anthropic",
+      "context_window": 200000,
+      "pricing_usd_per_million": {
+        "input": 1.0,
+        "output": 5.0
+      },
+      "endpoints": {
+        "messages": "/v1/messages",
+        "count_tokens": "/v1/messages/count_tokens"
+      }
+    },
+    {
+      "id": "gpt-5.5-mini",
+      "vendor": "openai",
+      "context_window": 200000,
+      "pricing_usd_per_million": {
+        "input": 1.5,
+        "output": 6.0
+      },
+      "endpoints": {
+        "responses": "/v1/responses",
+        "input_tokens_count": "/v1/responses/input_tokens"
+      }
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "01_code.py",
+      "category": "code",
+      "size_tier": "probe",
+      "characters": 309,
+      "bytes_utf8": 309,
+      "language": "python",
+      "added_at": "2026-02-05",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "scaling-check",
+        "baseline"
+      ]
+    },
+    {
+      "name": "02_prose.txt",
+      "category": "prose",
+      "size_tier": "probe",
+      "characters": 143,
+      "bytes_utf8": 143,
+      "language": "en",
+      "added_at": "2026-01-18",
+      "owner": "data",
+      "tags": [
+        "controlled",
+        "fixture",
+        "baseline"
+      ]
+    },
+    {
+      "name": "03_chat_transcript.txt",
+      "category": "chat_transcript",
+      "size_tier": "signal",
+      "characters": 3807,
+      "bytes_utf8": 3807,
+      "language": "en",
+      "added_at": "2026-04-11",
+      "owner": "platform",
+      "tags": [
+        "unicode",
+        "fixture",
+        "public-safe"
+      ]
+    },
+    {
+      "name": "04_code.py",
+      "category": "code",
+      "size_tier": "probe",
+      "characters": 217,
+      "bytes_utf8": 217,
+      "language": "python",
+      "added_at": "2026-03-20",
+      "owner": "platform",
+      "tags": [
+        "benchmark",
+        "probe",
+        "baseline"
+      ]
+    },
+    {
+      "name": "05_markdown.md",
+      "category": "markdown",
+      "size_tier": "probe",
+      "characters": 216,
+      "bytes_utf8": 216,
+      "language": "en",
+      "added_at": "2026-03-27",
+      "owner": "platform",
+      "tags": [
+        "baseline",
+        "probe",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "06_prose.txt",
+      "category": "prose",
+      "size_tier": "scaling",
+      "characters": 11307,
+      "bytes_utf8": 11307,
+      "language": "en",
+      "added_at": "2026-02-28",
+      "owner": "ops",
+      "tags": [
+        "controlled",
+        "unicode",
+        "baseline"
+      ]
+    },
+    {
+      "name": "07_diff.patch",
+      "category": "diff",
+      "size_tier": "signal",
+      "characters": 5410,
+      "bytes_utf8": 5410,
+      "language": null,
+      "added_at": "2026-03-23",
+      "owner": "ops",
+      "tags": [
+        "unicode",
+        "scaling-check",
+        "probe"
+      ]
+    },
+    {
+      "name": "08_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "signal",
+      "characters": 5608,
+      "bytes_utf8": 5608,
+      "language": null,
+      "added_at": "2026-02-22",
+      "owner": "platform",
+      "tags": [
+        "benchmark",
+        "fixture",
+        "public-safe"
+      ]
+    },
+    {
+      "name": "09_diff.patch",
+      "category": "diff",
+      "size_tier": "signal",
+      "characters": 3042,
+      "bytes_utf8": 3042,
+      "language": null,
+      "added_at": "2026-03-07",
+      "owner": "docs",
+      "tags": [
+        "controlled",
+        "probe",
+        "baseline"
+      ]
+    },
+    {
+      "name": "10_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 4520,
+      "bytes_utf8": 4520,
+      "language": null,
+      "added_at": "2026-03-24",
+      "owner": "docs",
+      "tags": [
+        "controlled",
+        "unicode",
+        "fixture"
+      ]
+    },
+    {
+      "name": "11_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 3244,
+      "bytes_utf8": 3244,
+      "language": null,
+      "added_at": "2026-01-05",
+      "owner": "data",
+      "tags": [
+        "controlled",
+        "scaling-check",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "12_sql.sql",
+      "category": "sql",
+      "size_tier": "signal",
+      "characters": 6334,
+      "bytes_utf8": 6334,
+      "language": null,
+      "added_at": "2026-03-18",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "probe",
+        "scaling-check"
+      ]
+    },
+    {
+      "name": "13_logs.txt",
+      "category": "logs",
+      "size_tier": "scaling",
+      "characters": 14808,
+      "bytes_utf8": 14808,
+      "language": "en",
+      "added_at": "2026-04-06",
+      "owner": "docs",
+      "tags": [
+        "benchmark",
+        "probe",
+        "controlled"
+      ]
+    },
+    {
+      "name": "14_logs.txt",
+      "category": "logs",
+      "size_tier": "signal",
+      "characters": 3963,
+      "bytes_utf8": 3963,
+      "language": "en",
+      "added_at": "2026-01-28",
+      "owner": "platform",
+      "tags": [
+        "baseline",
+        "fixture",
+        "unicode"
+      ]
+    },
+    {
+      "name": "15_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 6844,
+      "bytes_utf8": 6844,
+      "language": null,
+      "added_at": "2026-03-16",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "unicode",
+        "controlled"
+      ]
+    },
+    {
+      "name": "16_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "probe",
+      "characters": 181,
+      "bytes_utf8": 181,
+      "language": null,
+      "added_at": "2026-01-24",
+      "owner": "docs",
+      "tags": [
+        "fixture",
+        "controlled",
+        "scaling-check"
+      ]
+    },
+    {
+      "name": "17_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 6393,
+      "bytes_utf8": 6393,
+      "language": null,
+      "added_at": "2026-02-09",
+      "owner": "docs",
+      "tags": [
+        "baseline",
+        "scaling-check",
+        "probe"
+      ]
+    },
+    {
+      "name": "18_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "scaling",
+      "characters": 21004,
+      "bytes_utf8": 21004,
+      "language": null,
+      "added_at": "2026-03-15",
+      "owner": "docs",
+      "tags": [
+        "fixture",
+        "public-safe",
+        "controlled"
+      ]
+    },
+    {
+      "name": "19_code.py",
+      "category": "code",
+      "size_tier": "signal",
+      "characters": 7319,
+      "bytes_utf8": 7319,
+      "language": "python",
+      "added_at": "2026-02-19",
+      "owner": "data",
+      "tags": [
+        "benchmark",
+        "public-safe",
+        "probe"
+      ]
+    },
+    {
+      "name": "20_prose.txt",
+      "category": "prose",
+      "size_tier": "signal",
+      "characters": 2757,
+      "bytes_utf8": 2757,
+      "language": "en",
+      "added_at": "2026-01-17",
+      "owner": "data",
+      "tags": [
+        "scaling-check",
+        "probe",
+        "baseline"
+      ]
+    },
+    {
+      "name": "21_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "signal",
+      "characters": 7177,
+      "bytes_utf8": 7177,
+      "language": null,
+      "added_at": "2026-04-08",
+      "owner": "docs",
+      "tags": [
+        "controlled",
+        "fixture",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "22_code.py",
+      "category": "code",
+      "size_tier": "scaling",
+      "characters": 16939,
+      "bytes_utf8": 16939,
+      "language": "python",
+      "added_at": "2026-04-15",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "benchmark",
+        "baseline"
+      ]
+    },
+    {
+      "name": "23_diff.patch",
+      "category": "diff",
+      "size_tier": "probe",
+      "characters": 183,
+      "bytes_utf8": 183,
+      "language": null,
+      "added_at": "2026-04-05",
+      "owner": "docs",
+      "tags": [
+        "unicode",
+        "public-safe",
+        "baseline"
+      ]
+    },
+    {
+      "name": "24_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "probe",
+      "characters": 233,
+      "bytes_utf8": 233,
+      "language": null,
+      "added_at": "2026-01-21",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "controlled",
+        "public-safe"
+      ]
+    },
+    {
+      "name": "25_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 6443,
+      "bytes_utf8": 6443,
+      "language": null,
+      "added_at": "2026-04-02",
+      "owner": "data",
+      "tags": [
+        "controlled",
+        "benchmark",
+        "baseline"
+      ]
+    },
+    {
+      "name": "26_logs.txt",
+      "category": "logs",
+      "size_tier": "signal",
+      "characters": 5965,
+      "bytes_utf8": 5965,
+      "language": "en",
+      "added_at": "2026-04-05",
+      "owner": "data",
+      "tags": [
+        "scaling-check",
+        "fixture",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "27_chat_transcript.txt",
+      "category": "chat_transcript",
+      "size_tier": "scaling",
+      "characters": 15138,
+      "bytes_utf8": 15138,
+      "language": "en",
+      "added_at": "2026-01-02",
+      "owner": "docs",
+      "tags": [
+        "unicode",
+        "benchmark",
+        "scaling-check"
+      ]
+    },
+    {
+      "name": "28_code.py",
+      "category": "code",
+      "size_tier": "signal",
+      "characters": 7374,
+      "bytes_utf8": 7374,
+      "language": "python",
+      "added_at": "2026-02-13",
+      "owner": "ops",
+      "tags": [
+        "baseline",
+        "scaling-check",
+        "controlled"
+      ]
+    },
+    {
+      "name": "29_prose.txt",
+      "category": "prose",
+      "size_tier": "signal",
+      "characters": 5934,
+      "bytes_utf8": 5934,
+      "language": "en",
+      "added_at": "2026-03-09",
+      "owner": "data",
+      "tags": [
+        "probe",
+        "fixture",
+        "unicode"
+      ]
+    },
+    {
+      "name": "30_sql.sql",
+      "category": "sql",
+      "size_tier": "signal",
+      "characters": 4957,
+      "bytes_utf8": 4957,
+      "language": null,
+      "added_at": "2026-03-25",
+      "owner": "ops",
+      "tags": [
+        "benchmark",
+        "baseline",
+        "scaling-check"
+      ]
+    },
+    {
+      "name": "31_chat_transcript.txt",
+      "category": "chat_transcript",
+      "size_tier": "probe",
+      "characters": 138,
+      "bytes_utf8": 138,
+      "language": "en",
+      "added_at": "2026-03-05",
+      "owner": "platform",
+      "tags": [
+        "fixture",
+        "public-safe",
+        "unicode"
+      ]
+    },
+    {
+      "name": "32_logs.txt",
+      "category": "logs",
+      "size_tier": "signal",
+      "characters": 6950,
+      "bytes_utf8": 6950,
+      "language": "en",
+      "added_at": "2026-03-20",
+      "owner": "ops",
+      "tags": [
+        "scaling-check",
+        "probe",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "33_structured.json",
+      "category": "structured",
+      "size_tier": "signal",
+      "characters": 3376,
+      "bytes_utf8": 3376,
+      "language": null,
+      "added_at": "2026-02-09",
+      "owner": "platform",
+      "tags": [
+        "baseline",
+        "probe",
+        "unicode"
+      ]
+    },
+    {
+      "name": "34_unicode_probe.txt",
+      "category": "unicode_probe",
+      "size_tier": "scaling",
+      "characters": 18280,
+      "bytes_utf8": 18280,
+      "language": null,
+      "added_at": "2026-04-09",
+      "owner": "ops",
+      "tags": [
+        "fixture",
+        "probe",
+        "baseline"
+      ]
+    },
+    {
+      "name": "35_logs.txt",
+      "category": "logs",
+      "size_tier": "probe",
+      "characters": 120,
+      "bytes_utf8": 120,
+      "language": "en",
+      "added_at": "2026-03-06",
+      "owner": "docs",
+      "tags": [
+        "controlled",
+        "scaling-check",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "36_code.py",
+      "category": "code",
+      "size_tier": "probe",
+      "characters": 296,
+      "bytes_utf8": 296,
+      "language": "python",
+      "added_at": "2026-01-27",
+      "owner": "platform",
+      "tags": [
+        "unicode",
+        "baseline",
+        "fixture"
+      ]
+    },
+    {
+      "name": "37_prose.txt",
+      "category": "prose",
+      "size_tier": "signal",
+      "characters": 2826,
+      "bytes_utf8": 2826,
+      "language": "en",
+      "added_at": "2026-02-22",
+      "owner": "data",
+      "tags": [
+        "fixture",
+        "unicode",
+        "scaling-check"
+      ]
+    },
+    {
+      "name": "38_sql.sql",
+      "category": "sql",
+      "size_tier": "signal",
+      "characters": 3766,
+      "bytes_utf8": 3766,
+      "language": null,
+      "added_at": "2026-02-26",
+      "owner": "data",
+      "tags": [
+        "controlled",
+        "benchmark",
+        "fixture"
+      ]
+    },
+    {
+      "name": "39_diff.patch",
+      "category": "diff",
+      "size_tier": "signal",
+      "characters": 4532,
+      "bytes_utf8": 4532,
+      "language": null,
+      "added_at": "2026-02-26",
+      "owner": "ops",
+      "tags": [
+        "controlled",
+        "public-safe",
+        "benchmark"
+      ]
+    },
+    {
+      "name": "40_stack_trace.txt",
+      "category": "stack_trace",
+      "size_tier": "signal",
+      "characters": 6270,
+      "bytes_utf8": 6270,
+      "language": null,
+      "added_at": "2026-03-27",
+      "owner": "data",
+      "tags": [
+        "baseline",
+        "benchmark",
+        "probe"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run_0001",
+      "started_at": "2026-02-13T10:17:00Z",
+      "duration_seconds": 2.15,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "05_markdown.md",
+          "claude_input_tokens": 7970,
+          "openai_input_tokens": 8165,
+          "delta": 195,
+          "delta_pct": 2.45,
+          "size_tier": "probe"
+        },
+        {
+          "case": "18_unicode_probe.txt",
+          "claude_input_tokens": 2926,
+          "openai_input_tokens": 3054,
+          "delta": 128,
+          "delta_pct": 4.37,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "33_structured.json",
+          "claude_input_tokens": 3324,
+          "openai_input_tokens": 3471,
+          "delta": 147,
+          "delta_pct": 4.42,
+          "size_tier": "signal"
+        },
+        {
+          "case": "35_logs.txt",
+          "claude_input_tokens": 2762,
+          "openai_input_tokens": 2576,
+          "delta": -186,
+          "delta_pct": -6.73,
+          "size_tier": "probe"
+        },
+        {
+          "case": "08_unicode_probe.txt",
+          "claude_input_tokens": 7234,
+          "openai_input_tokens": 7167,
+          "delta": -67,
+          "delta_pct": -0.93,
+          "size_tier": "signal"
+        },
+        {
+          "case": "12_sql.sql",
+          "claude_input_tokens": 4806,
+          "openai_input_tokens": 4741,
+          "delta": -65,
+          "delta_pct": -1.35,
+          "size_tier": "signal"
+        },
+        {
+          "case": "03_chat_transcript.txt",
+          "claude_input_tokens": 938,
+          "openai_input_tokens": 1043,
+          "delta": 105,
+          "delta_pct": 11.19,
+          "size_tier": "signal"
+        },
+        {
+          "case": "28_code.py",
+          "claude_input_tokens": 2881,
+          "openai_input_tokens": 3054,
+          "delta": 173,
+          "delta_pct": 6.0,
+          "size_tier": "signal"
+        },
+        {
+          "case": "21_unicode_probe.txt",
+          "claude_input_tokens": 3624,
+          "openai_input_tokens": 3734,
+          "delta": 110,
+          "delta_pct": 3.04,
+          "size_tier": "signal"
+        },
+        {
+          "case": "33_structured.json",
+          "claude_input_tokens": 997,
+          "openai_input_tokens": 994,
+          "delta": -3,
+          "delta_pct": -0.3,
+          "size_tier": "signal"
+        },
+        {
+          "case": "37_prose.txt",
+          "claude_input_tokens": 1607,
+          "openai_input_tokens": 1537,
+          "delta": -70,
+          "delta_pct": -4.36,
+          "size_tier": "signal"
+        },
+        {
+          "case": "03_chat_transcript.txt",
+          "claude_input_tokens": 5856,
+          "openai_input_tokens": 5879,
+          "delta": 23,
+          "delta_pct": 0.39,
+          "size_tier": "signal"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0002",
+      "started_at": "2026-02-12T13:04:00Z",
+      "duration_seconds": 42.92,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "22_code.py",
+          "claude_input_tokens": 5154,
+          "openai_input_tokens": 5114,
+          "delta": -40,
+          "delta_pct": -0.78,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "08_unicode_probe.txt",
+          "claude_input_tokens": 5946,
+          "openai_input_tokens": 5899,
+          "delta": -47,
+          "delta_pct": -0.79,
+          "size_tier": "signal"
+        },
+        {
+          "case": "33_structured.json",
+          "claude_input_tokens": 2583,
+          "openai_input_tokens": 2724,
+          "delta": 141,
+          "delta_pct": 5.46,
+          "size_tier": "signal"
+        },
+        {
+          "case": "27_chat_transcript.txt",
+          "claude_input_tokens": 2722,
+          "openai_input_tokens": 2728,
+          "delta": 6,
+          "delta_pct": 0.22,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "19_code.py",
+          "claude_input_tokens": 4591,
+          "openai_input_tokens": 4456,
+          "delta": -135,
+          "delta_pct": -2.94,
+          "size_tier": "signal"
+        },
+        {
+          "case": "13_logs.txt",
+          "claude_input_tokens": 3494,
+          "openai_input_tokens": 3634,
+          "delta": 140,
+          "delta_pct": 4.01,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "25_structured.json",
+          "claude_input_tokens": 5598,
+          "openai_input_tokens": 5781,
+          "delta": 183,
+          "delta_pct": 3.27,
+          "size_tier": "signal"
+        },
+        {
+          "case": "12_sql.sql",
+          "claude_input_tokens": 5092,
+          "openai_input_tokens": 5183,
+          "delta": 91,
+          "delta_pct": 1.79,
+          "size_tier": "signal"
+        },
+        {
+          "case": "20_prose.txt",
+          "claude_input_tokens": 3376,
+          "openai_input_tokens": 3456,
+          "delta": 80,
+          "delta_pct": 2.37,
+          "size_tier": "signal"
+        },
+        {
+          "case": "01_code.py",
+          "claude_input_tokens": 2539,
+          "openai_input_tokens": 2485,
+          "delta": -54,
+          "delta_pct": -2.13,
+          "size_tier": "probe"
+        },
+        {
+          "case": "14_logs.txt",
+          "claude_input_tokens": 3571,
+          "openai_input_tokens": 3667,
+          "delta": 96,
+          "delta_pct": 2.69,
+          "size_tier": "signal"
+        },
+        {
+          "case": "39_diff.patch",
+          "claude_input_tokens": 5413,
+          "openai_input_tokens": 5377,
+          "delta": -36,
+          "delta_pct": -0.67,
+          "size_tier": "signal"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0003",
+      "started_at": "2026-04-22T06:32:00Z",
+      "duration_seconds": 62.51,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "31_chat_transcript.txt",
+          "claude_input_tokens": 6552,
+          "openai_input_tokens": 6728,
+          "delta": 176,
+          "delta_pct": 2.69,
+          "size_tier": "probe"
+        },
+        {
+          "case": "11_structured.json",
+          "claude_input_tokens": 5447,
+          "openai_input_tokens": 5290,
+          "delta": -157,
+          "delta_pct": -2.88,
+          "size_tier": "signal"
+        },
+        {
+          "case": "19_code.py",
+          "claude_input_tokens": 4272,
+          "openai_input_tokens": 4411,
+          "delta": 139,
+          "delta_pct": 3.25,
+          "size_tier": "signal"
+        },
+        {
+          "case": "40_stack_trace.txt",
+          "claude_input_tokens": 2795,
+          "openai_input_tokens": 2642,
+          "delta": -153,
+          "delta_pct": -5.47,
+          "size_tier": "signal"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 5561,
+          "openai_input_tokens": 5519,
+          "delta": -42,
+          "delta_pct": -0.76,
+          "size_tier": "probe"
+        },
+        {
+          "case": "15_structured.json",
+          "claude_input_tokens": 6657,
+          "openai_input_tokens": 6558,
+          "delta": -99,
+          "delta_pct": -1.49,
+          "size_tier": "signal"
+        },
+        {
+          "case": "10_structured.json",
+          "claude_input_tokens": 250,
+          "openai_input_tokens": 73,
+          "delta": -177,
+          "delta_pct": -70.8,
+          "size_tier": "signal"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 3942,
+          "openai_input_tokens": 4054,
+          "delta": 112,
+          "delta_pct": 2.84,
+          "size_tier": "probe"
+        },
+        {
+          "case": "05_markdown.md",
+          "claude_input_tokens": 3780,
+          "openai_input_tokens": 3792,
+          "delta": 12,
+          "delta_pct": 0.32,
+          "size_tier": "probe"
+        },
+        {
+          "case": "37_prose.txt",
+          "claude_input_tokens": 1642,
+          "openai_input_tokens": 1809,
+          "delta": 167,
+          "delta_pct": 10.17,
+          "size_tier": "signal"
+        },
+        {
+          "case": "25_structured.json",
+          "claude_input_tokens": 4099,
+          "openai_input_tokens": 4103,
+          "delta": 4,
+          "delta_pct": 0.1,
+          "size_tier": "signal"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 1258,
+          "openai_input_tokens": 1393,
+          "delta": 135,
+          "delta_pct": 10.73,
+          "size_tier": "probe"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0004",
+      "started_at": "2026-01-25T13:14:00Z",
+      "duration_seconds": 47.87,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "12_sql.sql",
+          "claude_input_tokens": 6637,
+          "openai_input_tokens": 6793,
+          "delta": 156,
+          "delta_pct": 2.35,
+          "size_tier": "signal"
+        },
+        {
+          "case": "34_unicode_probe.txt",
+          "claude_input_tokens": 3855,
+          "openai_input_tokens": 3680,
+          "delta": -175,
+          "delta_pct": -4.54,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "36_code.py",
+          "claude_input_tokens": 2091,
+          "openai_input_tokens": 1953,
+          "delta": -138,
+          "delta_pct": -6.6,
+          "size_tier": "probe"
+        },
+        {
+          "case": "30_sql.sql",
+          "claude_input_tokens": 1142,
+          "openai_input_tokens": 1179,
+          "delta": 37,
+          "delta_pct": 3.24,
+          "size_tier": "signal"
+        },
+        {
+          "case": "34_unicode_probe.txt",
+          "claude_input_tokens": 4628,
+          "openai_input_tokens": 4732,
+          "delta": 104,
+          "delta_pct": 2.25,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "21_unicode_probe.txt",
+          "claude_input_tokens": 7832,
+          "openai_input_tokens": 8018,
+          "delta": 186,
+          "delta_pct": 2.37,
+          "size_tier": "signal"
+        },
+        {
+          "case": "29_prose.txt",
+          "claude_input_tokens": 5068,
+          "openai_input_tokens": 5236,
+          "delta": 168,
+          "delta_pct": 3.31,
+          "size_tier": "signal"
+        },
+        {
+          "case": "33_structured.json",
+          "claude_input_tokens": 3545,
+          "openai_input_tokens": 3625,
+          "delta": 80,
+          "delta_pct": 2.26,
+          "size_tier": "signal"
+        },
+        {
+          "case": "29_prose.txt",
+          "claude_input_tokens": 7399,
+          "openai_input_tokens": 7280,
+          "delta": -119,
+          "delta_pct": -1.61,
+          "size_tier": "signal"
+        },
+        {
+          "case": "31_chat_transcript.txt",
+          "claude_input_tokens": 3736,
+          "openai_input_tokens": 3668,
+          "delta": -68,
+          "delta_pct": -1.82,
+          "size_tier": "probe"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 6930,
+          "openai_input_tokens": 7056,
+          "delta": 126,
+          "delta_pct": 1.82,
+          "size_tier": "probe"
+        },
+        {
+          "case": "18_unicode_probe.txt",
+          "claude_input_tokens": 6323,
+          "openai_input_tokens": 6521,
+          "delta": 198,
+          "delta_pct": 3.13,
+          "size_tier": "scaling"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0005",
+      "started_at": "2026-02-09T14:04:00Z",
+      "duration_seconds": 2.52,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "19_code.py",
+          "claude_input_tokens": 1970,
+          "openai_input_tokens": 1909,
+          "delta": -61,
+          "delta_pct": -3.1,
+          "size_tier": "signal"
+        },
+        {
+          "case": "22_code.py",
+          "claude_input_tokens": 2669,
+          "openai_input_tokens": 2745,
+          "delta": 76,
+          "delta_pct": 2.85,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "06_prose.txt",
+          "claude_input_tokens": 1183,
+          "openai_input_tokens": 1060,
+          "delta": -123,
+          "delta_pct": -10.4,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "15_structured.json",
+          "claude_input_tokens": 3187,
+          "openai_input_tokens": 3342,
+          "delta": 155,
+          "delta_pct": 4.86,
+          "size_tier": "signal"
+        },
+        {
+          "case": "10_structured.json",
+          "claude_input_tokens": 5836,
+          "openai_input_tokens": 5745,
+          "delta": -91,
+          "delta_pct": -1.56,
+          "size_tier": "signal"
+        },
+        {
+          "case": "05_markdown.md",
+          "claude_input_tokens": 3448,
+          "openai_input_tokens": 3456,
+          "delta": 8,
+          "delta_pct": 0.23,
+          "size_tier": "probe"
+        },
+        {
+          "case": "22_code.py",
+          "claude_input_tokens": 4495,
+          "openai_input_tokens": 4533,
+          "delta": 38,
+          "delta_pct": 0.85,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "27_chat_transcript.txt",
+          "claude_input_tokens": 560,
+          "openai_input_tokens": 465,
+          "delta": -95,
+          "delta_pct": -16.96,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "27_chat_transcript.txt",
+          "claude_input_tokens": 3240,
+          "openai_input_tokens": 3434,
+          "delta": 194,
+          "delta_pct": 5.99,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "38_sql.sql",
+          "claude_input_tokens": 7800,
+          "openai_input_tokens": 7956,
+          "delta": 156,
+          "delta_pct": 2.0,
+          "size_tier": "signal"
+        },
+        {
+          "case": "02_prose.txt",
+          "claude_input_tokens": 7068,
+          "openai_input_tokens": 7259,
+          "delta": 191,
+          "delta_pct": 2.7,
+          "size_tier": "probe"
+        },
+        {
+          "case": "37_prose.txt",
+          "claude_input_tokens": 3166,
+          "openai_input_tokens": 3210,
+          "delta": 44,
+          "delta_pct": 1.39,
+          "size_tier": "signal"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0006",
+      "started_at": "2026-03-10T12:54:00Z",
+      "duration_seconds": 35.36,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "27_chat_transcript.txt",
+          "claude_input_tokens": 4459,
+          "openai_input_tokens": 4641,
+          "delta": 182,
+          "delta_pct": 4.08,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "35_logs.txt",
+          "claude_input_tokens": 6602,
+          "openai_input_tokens": 6710,
+          "delta": 108,
+          "delta_pct": 1.64,
+          "size_tier": "probe"
+        },
+        {
+          "case": "15_structured.json",
+          "claude_input_tokens": 4049,
+          "openai_input_tokens": 3961,
+          "delta": -88,
+          "delta_pct": -2.17,
+          "size_tier": "signal"
+        },
+        {
+          "case": "18_unicode_probe.txt",
+          "claude_input_tokens": 3620,
+          "openai_input_tokens": 3668,
+          "delta": 48,
+          "delta_pct": 1.33,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "02_prose.txt",
+          "claude_input_tokens": 3235,
+          "openai_input_tokens": 3207,
+          "delta": -28,
+          "delta_pct": -0.87,
+          "size_tier": "probe"
+        },
+        {
+          "case": "26_logs.txt",
+          "claude_input_tokens": 5982,
+          "openai_input_tokens": 5866,
+          "delta": -116,
+          "delta_pct": -1.94,
+          "size_tier": "signal"
+        },
+        {
+          "case": "30_sql.sql",
+          "claude_input_tokens": 7582,
+          "openai_input_tokens": 7447,
+          "delta": -135,
+          "delta_pct": -1.78,
+          "size_tier": "signal"
+        },
+        {
+          "case": "40_stack_trace.txt",
+          "claude_input_tokens": 4425,
+          "openai_input_tokens": 4238,
+          "delta": -187,
+          "delta_pct": -4.23,
+          "size_tier": "signal"
+        },
+        {
+          "case": "26_logs.txt",
+          "claude_input_tokens": 4898,
+          "openai_input_tokens": 4986,
+          "delta": 88,
+          "delta_pct": 1.8,
+          "size_tier": "signal"
+        },
+        {
+          "case": "02_prose.txt",
+          "claude_input_tokens": 737,
+          "openai_input_tokens": 866,
+          "delta": 129,
+          "delta_pct": 17.5,
+          "size_tier": "probe"
+        },
+        {
+          "case": "28_code.py",
+          "claude_input_tokens": 1161,
+          "openai_input_tokens": 1197,
+          "delta": 36,
+          "delta_pct": 3.1,
+          "size_tier": "signal"
+        },
+        {
+          "case": "12_sql.sql",
+          "claude_input_tokens": 461,
+          "openai_input_tokens": 394,
+          "delta": -67,
+          "delta_pct": -14.53,
+          "size_tier": "signal"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0007",
+      "started_at": "2026-02-15T10:21:00Z",
+      "duration_seconds": 55.44,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "25_structured.json",
+          "claude_input_tokens": 2329,
+          "openai_input_tokens": 2514,
+          "delta": 185,
+          "delta_pct": 7.94,
+          "size_tier": "signal"
+        },
+        {
+          "case": "27_chat_transcript.txt",
+          "claude_input_tokens": 2116,
+          "openai_input_tokens": 1957,
+          "delta": -159,
+          "delta_pct": -7.51,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "31_chat_transcript.txt",
+          "claude_input_tokens": 208,
+          "openai_input_tokens": 391,
+          "delta": 183,
+          "delta_pct": 87.98,
+          "size_tier": "probe"
+        },
+        {
+          "case": "35_logs.txt",
+          "claude_input_tokens": 476,
+          "openai_input_tokens": 455,
+          "delta": -21,
+          "delta_pct": -4.41,
+          "size_tier": "probe"
+        },
+        {
+          "case": "15_structured.json",
+          "claude_input_tokens": 5375,
+          "openai_input_tokens": 5210,
+          "delta": -165,
+          "delta_pct": -3.07,
+          "size_tier": "signal"
+        },
+        {
+          "case": "03_chat_transcript.txt",
+          "claude_input_tokens": 6228,
+          "openai_input_tokens": 6043,
+          "delta": -185,
+          "delta_pct": -2.97,
+          "size_tier": "signal"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 1683,
+          "openai_input_tokens": 1493,
+          "delta": -190,
+          "delta_pct": -11.29,
+          "size_tier": "probe"
+        },
+        {
+          "case": "40_stack_trace.txt",
+          "claude_input_tokens": 1298,
+          "openai_input_tokens": 1220,
+          "delta": -78,
+          "delta_pct": -6.01,
+          "size_tier": "signal"
+        },
+        {
+          "case": "09_diff.patch",
+          "claude_input_tokens": 3929,
+          "openai_input_tokens": 4071,
+          "delta": 142,
+          "delta_pct": 3.61,
+          "size_tier": "signal"
+        },
+        {
+          "case": "08_unicode_probe.txt",
+          "claude_input_tokens": 4670,
+          "openai_input_tokens": 4581,
+          "delta": -89,
+          "delta_pct": -1.91,
+          "size_tier": "signal"
+        },
+        {
+          "case": "30_sql.sql",
+          "claude_input_tokens": 5780,
+          "openai_input_tokens": 5711,
+          "delta": -69,
+          "delta_pct": -1.19,
+          "size_tier": "signal"
+        },
+        {
+          "case": "24_unicode_probe.txt",
+          "claude_input_tokens": 1424,
+          "openai_input_tokens": 1534,
+          "delta": 110,
+          "delta_pct": 7.72,
+          "size_tier": "probe"
+        }
+      ]
+    },
+    {
+      "run_id": "run_0008",
+      "started_at": "2026-01-25T05:19:00Z",
+      "duration_seconds": 86.55,
+      "model_pair": [
+        "claude-opus-4-7",
+        "gpt-5.5"
+      ],
+      "cost_usd": 0.0,
+      "case_count": 12,
+      "warnings": [],
+      "cases": [
+        {
+          "case": "07_diff.patch",
+          "claude_input_tokens": 4790,
+          "openai_input_tokens": 4603,
+          "delta": -187,
+          "delta_pct": -3.9,
+          "size_tier": "signal"
+        },
+        {
+          "case": "20_prose.txt",
+          "claude_input_tokens": 4766,
+          "openai_input_tokens": 4912,
+          "delta": 146,
+          "delta_pct": 3.06,
+          "size_tier": "signal"
+        },
+        {
+          "case": "25_structured.json",
+          "claude_input_tokens": 3299,
+          "openai_input_tokens": 3465,
+          "delta": 166,
+          "delta_pct": 5.03,
+          "size_tier": "signal"
+        },
+        {
+          "case": "13_logs.txt",
+          "claude_input_tokens": 672,
+          "openai_input_tokens": 775,
+          "delta": 103,
+          "delta_pct": 15.33,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "16_unicode_probe.txt",
+          "claude_input_tokens": 884,
+          "openai_input_tokens": 1040,
+          "delta": 156,
+          "delta_pct": 17.65,
+          "size_tier": "probe"
+        },
+        {
+          "case": "20_prose.txt",
+          "claude_input_tokens": 7015,
+          "openai_input_tokens": 7165,
+          "delta": 150,
+          "delta_pct": 2.14,
+          "size_tier": "signal"
+        },
+        {
+          "case": "39_diff.patch",
+          "claude_input_tokens": 6648,
+          "openai_input_tokens": 6509,
+          "delta": -139,
+          "delta_pct": -2.09,
+          "size_tier": "signal"
+        },
+        {
+          "case": "37_prose.txt",
+          "claude_input_tokens": 6461,
+          "openai_input_tokens": 6282,
+          "delta": -179,
+          "delta_pct": -2.77,
+          "size_tier": "signal"
+        },
+        {
+          "case": "23_diff.patch",
+          "claude_input_tokens": 4414,
+          "openai_input_tokens": 4433,
+          "delta": 19,
+          "delta_pct": 0.43,
+          "size_tier": "probe"
+        },
+        {
+          "case": "24_unicode_probe.txt",
+          "claude_input_tokens": 614,
+          "openai_input_tokens": 673,
+          "delta": 59,
+          "delta_pct": 9.61,
+          "size_tier": "probe"
+        },
+        {
+          "case": "22_code.py",
+          "claude_input_tokens": 153,
+          "openai_input_tokens": 168,
+          "delta": 15,
+          "delta_pct": 9.8,
+          "size_tier": "scaling"
+        },
+        {
+          "case": "32_logs.txt",
+          "claude_input_tokens": 914,
+          "openai_input_tokens": 935,
+          "delta": 21,
+          "delta_pct": 2.3,
+          "size_tier": "signal"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "license": null,
+    "checksum": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "tags": [
+      "benchmark",
+      "tokenization",
+      "scaling",
+      "controlled",
+      "reproducible",
+      "public-safe"
+    ]
+  }
+}

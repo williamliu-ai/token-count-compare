@@ -1,0 +1,105 @@
+{
+  "schema_version": "2026-04-30",
+  "project": {
+    "id": "token-count-compare",
+    "name": "Token Count Compare",
+    "tags": ["benchmark", "tokenization", "fixtures", "providers"],
+    "owners": [
+      {"name": "Operator A", "email": "ops@example.com", "role": "maintainer"},
+      {"name": "Operator B", "email": "data@example.com", "role": "reviewer"}
+    ]
+  },
+  "models": [
+    {
+      "id": "claude-opus-4-7",
+      "vendor": "anthropic",
+      "context_window_tokens": 1000000,
+      "endpoints": {
+        "messages": "https://api.anthropic.com/v1/messages",
+        "count_tokens": "https://api.anthropic.com/v1/messages/count_tokens"
+      },
+      "pricing_usd_per_million": {"input": 15.0, "output": 75.0},
+      "tokenizer_notes": "count_tokens is documented as an estimate; may differ slightly from create-message usage"
+    },
+    {
+      "id": "gpt-5.5",
+      "vendor": "openai",
+      "context_window_tokens": 400000,
+      "endpoints": {
+        "responses": "https://api.openai.com/v1/responses",
+        "input_tokens_count": "https://api.openai.com/v1/responses/input_tokens"
+      },
+      "pricing_usd_per_million": {"input": 12.5, "output": 60.0},
+      "tokenizer_notes": "input_tokens.count returns the exact input count for the Responses API"
+    }
+  ],
+  "fixtures": [
+    {
+      "name": "01_plain_prose.txt",
+      "category": "prose",
+      "size_tier": "signal",
+      "characters": 5198,
+      "bytes_utf8": 5198,
+      "language": "en",
+      "notes": "ordinary English prose, no Unicode oddities, paragraph-separated"
+    },
+    {
+      "name": "02_code.py",
+      "category": "code",
+      "size_tier": "signal",
+      "characters": 5033,
+      "bytes_utf8": 5033,
+      "language": "python",
+      "notes": "everyday module: dataclass, regex, slugify, generators"
+    },
+    {
+      "name": "03_mixed_punctuation.txt",
+      "category": "unicode_probe",
+      "size_tier": "probe",
+      "characters": 224,
+      "bytes_utf8": 244,
+      "language": "mixed",
+      "notes": "deliberate edge cases: emoji, CJK, smart quotes, math symbols, URL"
+    },
+    {
+      "name": "04_long_form.txt",
+      "category": "prose",
+      "size_tier": "scaling",
+      "characters": 15877,
+      "bytes_utf8": 15877,
+      "language": "en",
+      "notes": "non-repetitive long-form essay; replaces the earlier repeating fixture"
+    }
+  ],
+  "runs": [
+    {
+      "started_at": "2026-04-30T18:30:00Z",
+      "duration_seconds": 12.41,
+      "results_path": "results/latest.json",
+      "summary": {
+        "fixtures_processed": 21,
+        "providers": ["anthropic", "openai"],
+        "errors": [],
+        "warnings": ["one fixture exceeded the documented input limit for one provider"]
+      },
+      "deltas_by_category": {
+        "prose": {"openai_minus_claude_pct_avg": -3.7, "openai_minus_claude_pct_p95": -1.2},
+        "code": {"openai_minus_claude_pct_avg": 4.9, "openai_minus_claude_pct_p95": 7.8},
+        "unicode_probe": {"openai_minus_claude_pct_avg": 12.4, "openai_minus_claude_pct_p95": 19.0}
+      }
+    }
+  ],
+  "metadata": {
+    "created_at": "2026-04-30T22:48:00Z",
+    "license": null,
+    "checksums": {
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "blake3": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    },
+    "feature_flags": {
+      "include_full_prompt_counts": false,
+      "include_local_tokenizer": true,
+      "fail_on_missing_credentials": false
+    }
+  }
+}
