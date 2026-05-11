@@ -18,6 +18,9 @@ from dotenv import dotenv_values
 OUTPUT_TOKEN_LIMIT = 16
 SIZE_TIER_PROBE_MAX_TOKENS = 300
 SIZE_TIER_SCALING_MIN_TOKENS = 4000
+DEFAULT_CLAUDE_MODEL = "claude-opus-4-7"
+DEFAULT_CLAUDE_OPUS_46_MODEL = "claude-opus-4-6"
+DEFAULT_OPENAI_MODEL = "gpt-5.5"
 PROJECT_ROOT = Path(__file__).resolve().parent
 PROJECT_ENV_PATH = PROJECT_ROOT / ".env"
 FIXTURE_EXTENSIONS = {
@@ -88,6 +91,29 @@ def load_project_env() -> dict[str, str]:
     return {key: value for key, value in dotenv_values(PROJECT_ENV_PATH).items() if value is not None}
 
 
+@dataclass(frozen=True)
+class ModelSpec:
+    key: str
+    provider: str
+    model: str
+
+
+def model_specs_from_env(env: dict[str, str]) -> list[ModelSpec]:
+    return [
+        ModelSpec("claude", "anthropic", env.get("CLAUDE_MODEL", DEFAULT_CLAUDE_MODEL)),
+        ModelSpec(
+            "claude_opus_4_6",
+            "anthropic",
+            env.get("CLAUDE_OPUS_46_MODEL", DEFAULT_CLAUDE_OPUS_46_MODEL),
+        ),
+        ModelSpec("openai", "openai", env.get("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)),
+    ]
+
+
+def models_by_key(specs: list[ModelSpec]) -> dict[str, str]:
+    return {spec.key: spec.model for spec in specs}
+
+
 @dataclass
 class UsageResult:
     model: str
@@ -146,23 +172,60 @@ def pct_delta(a: int | None, b: int | None) -> float | None:
     return round(((b - a) / a) * 100, 2)
 
 
+def _input_tokens(result: UsageResult | dict[str, Any] | None) -> int | None:
+    if result is None:
+        return None
+    if isinstance(result, UsageResult):
+        return result.input_tokens
+    return result.get("input_tokens")
+
+
+def build_comparisons(results: dict[str, UsageResult | dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    def compare_pair(base_key: str, comparison_key: str) -> dict[str, Any]:
+        base_tokens = _input_tokens(results.get(base_key))
+        comparison_tokens = _input_tokens(results.get(comparison_key))
+        delta = None
+        if base_tokens is not None and comparison_tokens is not None:
+            delta = comparison_tokens - base_tokens
+        return {
+            "base": base_key,
+            "comparison": comparison_key,
+            "input_tokens_delta": delta,
+            "input_tokens_pct": pct_delta(base_tokens, comparison_tokens),
+        }
+
+    return {
+        "openai_minus_claude": compare_pair("claude", "openai"),
+        "openai_minus_claude_opus_4_6": compare_pair("claude_opus_4_6", "openai"),
+        "claude_minus_claude_opus_4_6": compare_pair("claude_opus_4_6", "claude"),
+    }
+
+
 def run(fixtures_dir: Path, out: Path) -> dict[str, Any]:
     env = load_project_env()
-    claude_model = env.get("CLAUDE_MODEL", "claude-opus-4-7")
-    openai_model = env.get("OPENAI_MODEL", "gpt-5.5")
+    model_specs = model_specs_from_env(env)
     anthropic_api_key = env.get("ANTHROPIC_API_KEY")
     openai_api_key = env.get("OPENAI_API_KEY")
 
     cases = []
     for fixture in sorted(p for p in fixtures_dir.iterdir() if p.is_file() and p.suffix in FIXTURE_EXTENSIONS):
         text = fixture.read_text(encoding="utf-8")
-        claude = call_claude(claude_model, text, anthropic_api_key)
-        openai = call_openai(openai_model, text, openai_api_key)
+        results: dict[str, UsageResult] = {}
+        for spec in model_specs:
+            if spec.provider == "anthropic":
+                results[spec.key] = call_claude(spec.model, text, anthropic_api_key)
+            elif spec.provider == "openai":
+                results[spec.key] = call_openai(spec.model, text, openai_api_key)
+            else:
+                results[spec.key] = UsageResult(spec.model, None, None, None, "", error=f"unknown provider {spec.provider}")
+
+        claude = results["claude"]
+        openai = results["openai"]
         delta = None
         if claude.input_tokens is not None and openai.input_tokens is not None:
             delta = openai.input_tokens - claude.input_tokens
         max_reported = None
-        for value in (claude.input_tokens, openai.input_tokens):
+        for value in (result.input_tokens for result in results.values()):
             if value is None:
                 continue
             max_reported = value if max_reported is None else max(max_reported, value)
@@ -172,11 +235,12 @@ def run(fixtures_dir: Path, out: Path) -> dict[str, Any]:
                 "characters": len(text),
                 "bytes_utf8": len(text.encode("utf-8")),
                 "size_tier": classify_size_tier(max_reported),
-                "results": {"claude": asdict(claude), "openai": asdict(openai)},
+                "results": {key: asdict(result) for key, result in results.items()},
                 "delta": {
                     "input_tokens_openai_minus_claude": delta,
                     "input_tokens_pct": pct_delta(claude.input_tokens, openai.input_tokens),
                 },
+                "comparisons": build_comparisons(results),
             }
         )
 
@@ -184,7 +248,7 @@ def run(fixtures_dir: Path, out: Path) -> dict[str, Any]:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "prompt_template": INGEST_ONLY_PROMPT_TEMPLATE,
         "output_token_limit": OUTPUT_TOKEN_LIMIT,
-        "models": {"claude": claude_model, "openai": openai_model},
+        "models": models_by_key(model_specs),
         "cases": cases,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -193,21 +257,29 @@ def run(fixtures_dir: Path, out: Path) -> dict[str, Any]:
 
 
 def print_table(report: dict[str, Any]) -> None:
-    print(f"Wrote benchmark for Claude={report['models']['claude']} OpenAI={report['models']['openai']}")
-    print(f"{'case':40} {'tier':8} {'chars':>6} {'claude_in':>10} {'gpt_in':>7} {'delta':>6} {'delta_pct':>10}")
-    print("-" * 96)
+    print(
+        "Wrote benchmark for "
+        f"Opus 4.7={report['models']['claude']} "
+        f"Opus 4.6={report['models']['claude_opus_4_6']} "
+        f"OpenAI={report['models']['openai']}"
+    )
+    print(
+        f"{'case':40} {'tier':8} {'chars':>6} {'opus47':>8} {'opus46':>8} "
+        f"{'gpt':>7} {'47-gpt':>7} {'46-gpt':>7} {'47-46':>7}"
+    )
+    print("-" * 106)
     for case in report["cases"]:
         c = case["results"]["claude"]["input_tokens"]
+        c46 = case["results"]["claude_opus_4_6"]["input_tokens"]
         g = case["results"]["openai"]["input_tokens"]
-        d = case["delta"]["input_tokens_openai_minus_claude"]
-        p = case["delta"]["input_tokens_pct"]
+        delta_47_gpt = None if c is None or g is None else c - g
+        delta_46_gpt = None if c46 is None or g is None else c46 - g
+        delta_47_46 = None if c is None or c46 is None else c - c46
         tier = case.get("size_tier", "unknown")
-        # Bracket percentage deltas for probe-tier fixtures so readers don't
-        # over-interpret unstable percentages on tiny inputs.
-        pct_display = f"({p}*)" if tier == "probe" and p is not None else str(p)
         print(
             f"{case['case'][:40]:40} {tier:8} {case['characters']:6} "
-            f"{str(c):>10} {str(g):>7} {str(d):>6} {pct_display:>10}"
+            f"{str(c):>8} {str(c46):>8} {str(g):>7} "
+            f"{str(delta_47_gpt):>7} {str(delta_46_gpt):>7} {str(delta_47_46):>7}"
         )
     if any(case.get("size_tier") == "probe" for case in report["cases"]):
         print()

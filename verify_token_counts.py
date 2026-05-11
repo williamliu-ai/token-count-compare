@@ -23,6 +23,9 @@ from compare_tokens import (
     build_prompt,
     classify_size_tier,
     load_project_env,
+    models_by_key,
+    model_specs_from_env,
+    ModelSpec,
 )
 
 
@@ -115,16 +118,36 @@ def compare(observed: int | None, baseline: int | None, tolerance: int) -> dict[
     }
 
 
-def provider_counts_for_text(claude_model: str, openai_model: str, text: str, anthropic_api_key: str | None, openai_api_key: str | None) -> dict[str, Any]:
-    claude = anthropic_count_tokens(claude_model, text, anthropic_api_key)
-    openai = openai_input_tokens_count(openai_model, text, openai_api_key)
-    tiktoken = openai_tiktoken_count(openai_model, text)
-    return {
-        "claude": asdict(claude),
-        "openai": asdict(openai),
-        "openai_tiktoken_secondary": asdict(tiktoken),
-        "openai_provider_vs_tiktoken": compare(openai.tokens, tiktoken.tokens, 0),
-    }
+def provider_counts_for_text(
+    model_specs: list[ModelSpec],
+    text: str,
+    anthropic_api_key: str | None,
+    openai_api_key: str | None,
+) -> dict[str, Any]:
+    counts: dict[str, Any] = {}
+    openai_model = None
+    openai_count: Baseline | None = None
+
+    for spec in model_specs:
+        if spec.provider == "anthropic":
+            counts[spec.key] = asdict(anthropic_count_tokens(spec.model, text, anthropic_api_key))
+        elif spec.provider == "openai":
+            openai_model = spec.model
+            openai_count = openai_input_tokens_count(spec.model, text, openai_api_key)
+            counts[spec.key] = asdict(openai_count)
+        else:
+            counts[spec.key] = asdict(
+                Baseline("provider_count_tokens", spec.provider, None, "unavailable", f"unknown provider {spec.provider}")
+            )
+
+    tiktoken = openai_tiktoken_count(openai_model or "gpt-5.5", text)
+    counts["openai_tiktoken_secondary"] = asdict(tiktoken)
+    counts["openai_provider_vs_tiktoken"] = compare(
+        openai_count.tokens if openai_count else None,
+        tiktoken.tokens,
+        0,
+    )
+    return counts
 
 
 def verify(
@@ -136,8 +159,11 @@ def verify(
 ) -> dict[str, Any]:
     env = load_project_env()
     report = load_report(report_path)
-    claude_model = (report or {}).get("models", {}).get("claude") or env.get("CLAUDE_MODEL", "claude-opus-4-7")
-    openai_model = (report or {}).get("models", {}).get("openai") or env.get("OPENAI_MODEL", "gpt-5.5")
+    report_models = (report or {}).get("models", {})
+    model_specs = [
+        ModelSpec(spec.key, spec.provider, report_models.get(spec.key) or spec.model)
+        for spec in model_specs_from_env(env)
+    ]
     anthropic_api_key = env.get("ANTHROPIC_API_KEY")
     openai_api_key = env.get("OPENAI_API_KEY")
     # The full-prompt provider calls are only meaningful when we are validating
@@ -149,17 +175,18 @@ def verify(
     for fixture in sorted(p for p in fixtures_dir.iterdir() if p.is_file() and p.suffix in FIXTURE_EXTENSIONS):
         text = fixture.read_text(encoding="utf-8")
         full_prompt = build_prompt(text)
-        text_counts = provider_counts_for_text(claude_model, openai_model, text, anthropic_api_key, openai_api_key)
+        text_counts = provider_counts_for_text(model_specs, text, anthropic_api_key, openai_api_key)
         prompt_counts = (
             None
             if skip_full_prompt
-            else provider_counts_for_text(
-                claude_model, openai_model, full_prompt, anthropic_api_key, openai_api_key
-            )
+            else provider_counts_for_text(model_specs, full_prompt, anthropic_api_key, openai_api_key)
         )
-        claude_reported = reported_input(report, fixture.name, "claude")
-        openai_reported = reported_input(report, fixture.name, "openai")
-        size_tier = classify_size_tier(text_counts["claude"]["tokens"])
+        provider_tokens = [
+            text_counts.get(spec.key, {}).get("tokens")
+            for spec in model_specs
+            if text_counts.get(spec.key, {}).get("tokens") is not None
+        ]
+        size_tier = classify_size_tier(max(provider_tokens) if provider_tokens else None)
         controlled_block = {
             "characters": len(text),
             "bytes_utf8": len(text.encode("utf-8")),
@@ -176,20 +203,25 @@ def verify(
                 "note": "Use this only to validate a benchmark run that sent the ingest-only prompt. It intentionally includes prompt/template overhead.",
             }
         )
-        usage_check = (
-            None
-            if skip_full_prompt
-            else {
-                "claude_reported_input_tokens": claude_reported,
-                "claude_vs_full_prompt_count_tokens": compare(
-                    claude_reported, prompt_counts["claude"]["tokens"], tolerance
-                ),
-                "openai_reported_input_tokens": openai_reported,
-                "openai_vs_full_prompt_input_tokens_count": compare(
-                    openai_reported, prompt_counts["openai"]["tokens"], tolerance
-                ),
+        usage_check = None
+        if not skip_full_prompt:
+            per_model = {}
+            for spec in model_specs:
+                model_reported = reported_input(report, fixture.name, spec.key)
+                model_count = prompt_counts.get(spec.key, {}).get("tokens")
+                per_model[spec.key] = {
+                    "reported_input_tokens": model_reported,
+                    "vs_full_prompt_count_tokens": compare(model_reported, model_count, tolerance),
+                }
+            usage_check = {
+                "per_model": per_model,
+                "claude_reported_input_tokens": per_model["claude"]["reported_input_tokens"],
+                "claude_vs_full_prompt_count_tokens": per_model["claude"]["vs_full_prompt_count_tokens"],
+                "claude_opus_4_6_reported_input_tokens": per_model["claude_opus_4_6"]["reported_input_tokens"],
+                "claude_opus_4_6_vs_full_prompt_count_tokens": per_model["claude_opus_4_6"]["vs_full_prompt_count_tokens"],
+                "openai_reported_input_tokens": per_model["openai"]["reported_input_tokens"],
+                "openai_vs_full_prompt_input_tokens_count": per_model["openai"]["vs_full_prompt_count_tokens"],
             }
-        )
         cases.append(
             {
                 "case": fixture.name,
@@ -205,19 +237,23 @@ def verify(
         usage = case.get("reported_usage_check_for_existing_benchmark_json")
         if not usage:
             continue
-        checks.extend(
-            [
-                usage["claude_vs_full_prompt_count_tokens"]["status"],
-                usage["openai_vs_full_prompt_input_tokens_count"]["status"],
-            ]
-        )
+        if "per_model" in usage:
+            checks.extend(model["vs_full_prompt_count_tokens"]["status"] for model in usage["per_model"].values())
+        else:
+            checks.extend(
+                [
+                    usage["claude_vs_full_prompt_count_tokens"]["status"],
+                    usage["openai_vs_full_prompt_input_tokens_count"]["status"],
+                ]
+            )
     result = {
-        "models": {"claude": claude_model, "openai": openai_model},
+        "models": models_by_key(model_specs),
         "report_compared": str(report_path) if report_path else None,
         "tolerance_tokens": tolerance,
         "summary": {"pass": checks.count("pass"), "fail": checks.count("fail"), "skip": checks.count("skip")},
         "recommendation": {
             "claude_opus_4_7": "Use Anthropic's official /v1/messages/count_tokens (SDK: client.messages.count_tokens) as the provider-side baseline for controlled text. It supports active models including claude-opus-4-7.",
+            "claude_opus_4_6": "Use the same Anthropic token-count endpoint with model claude-opus-4-6 to compare the prior Opus generation against Opus 4.7 and GPT-5.5.",
             "gpt_5_5": "Use OpenAI's official Responses input token count endpoint (SDK: client.responses.input_tokens.count) as the provider-side baseline. Use actual Responses usage.input_tokens after a run as a second check; use tiktoken only as a local/secondary plain-text sanity check.",
             "cross_model_comparison": "For the article, compare provider count-token results on the raw fixture text only. Separately compare full prompt counts only when validating the benchmark script's actual request overhead.",
         },
@@ -239,8 +275,11 @@ def print_summary(result: dict[str, Any]) -> None:
         print("Counts-only run: no benchmark report supplied, no pass/fail checks performed.")
     else:
         print(f"Verification summary for benchmark usage checks: {summary} tolerance=±{result['tolerance_tokens']} token(s)")
-    print(f"{'case':40} {'tier':9} {'claude_text':>11} {'openai_text':>12} {'openai_tiktoken':>16}")
-    print("-" * 96)
+    print(
+        f"{'case':40} {'tier':9} {'opus47':>11} {'opus46':>11} "
+        f"{'openai_text':>12} {'openai_tiktoken':>16}"
+    )
+    print("-" * 108)
     has_probe = False
     for case in result["cases"]:
         counts = case["controlled_text"]["counts"]
@@ -251,6 +290,7 @@ def print_summary(result: dict[str, Any]) -> None:
             f"{case['case'][:40]:40} "
             f"{tier:9} "
             f"{str(counts['claude']['tokens']):>11} "
+            f"{str(counts['claude_opus_4_6']['tokens']):>11} "
             f"{str(counts['openai']['tokens']):>12} "
             f"{str(counts['openai_tiktoken_secondary']['tokens']):>16}"
         )
