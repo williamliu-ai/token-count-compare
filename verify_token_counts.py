@@ -2,12 +2,15 @@
 """Verify token-count methods for controlled text fixtures.
 
 Primary evidence:
-- Anthropic: messages.count_tokens for Claude Opus 4.7.
-- OpenAI: responses.input_tokens.count for GPT-5.5.
+- Anthropic (claude-* models): messages.count_tokens.
+- OpenAI (gpt-* models): responses.input_tokens.count.
 
 Secondary evidence:
 - OpenAI: local tiktoken count for raw text, when the model encoding is known.
 - Benchmark JSON: optional comparison against actual API usage.input_tokens from a run.
+
+Models come from the same flat ``MODELS`` list as compare_tokens.py, and every
+model is reported against the configured baseline.
 """
 from __future__ import annotations
 
@@ -20,12 +23,15 @@ from typing import Any
 from compare_tokens import (
     FIXTURE_EXTENSIONS,
     PROJECT_ENV_PATH,
+    ModelSpec,
+    baseline_model,
     build_prompt,
     classify_size_tier,
+    format_table,
     load_project_env,
-    models_by_key,
     model_specs_from_env,
-    ModelSpec,
+    provider_for_model,
+    short_label,
 )
 
 
@@ -86,10 +92,18 @@ def openai_tiktoken_count(model: str, text: str) -> Baseline:
             exactness = "local tokenizer selected by model name; useful exact local baseline if tiktoken knows this model"
         except KeyError:
             encoding = tiktoken.get_encoding("o200k_base")
-            exactness = "fallback o200k_base; useful plain-text evidence, not an exact GPT-5.5 guarantee"
+            exactness = f"fallback o200k_base; useful plain-text evidence, not an exact {model} guarantee"
         return Baseline("local_tokenizer", encoding.name, len(encoding.encode(text)), exactness)
     except Exception as exc:
         return Baseline("local_tokenizer", "tiktoken", None, "unavailable", str(exc))
+
+
+def count_tokens_for_model(spec: ModelSpec, text: str, anthropic_api_key: str | None, openai_api_key: str | None) -> Baseline:
+    if spec.provider == "anthropic":
+        return anthropic_count_tokens(spec.model, text, anthropic_api_key)
+    if spec.provider == "openai":
+        return openai_input_tokens_count(spec.model, text, openai_api_key)
+    return Baseline("provider_count_tokens", spec.provider, None, "unavailable", f"unknown provider {spec.provider}")
 
 
 def load_report(path: Path | None) -> dict[str, Any] | None:
@@ -98,12 +112,20 @@ def load_report(path: Path | None) -> dict[str, Any] | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def reported_input(report: dict[str, Any] | None, case_name: str, provider: str) -> int | None:
+def build_specs(report: dict[str, Any] | None, env: dict[str, str]) -> list[ModelSpec]:
+    """Use the report's recorded models/baseline when validating one; else the code config."""
+    if report and report.get("models") and report.get("baseline") in (report.get("models") or []):
+        baseline = report["baseline"]
+        return [ModelSpec(m, provider_for_model(m), m == baseline) for m in report["models"]]
+    return model_specs_from_env(env)
+
+
+def reported_input(report: dict[str, Any] | None, case_name: str, model: str) -> int | None:
     if not report:
         return None
     for case in report.get("cases", []):
         if case.get("case") == case_name:
-            return case.get("results", {}).get(provider, {}).get("input_tokens")
+            return case.get("results", {}).get(model, {}).get("input_tokens")
     return None
 
 
@@ -119,34 +141,25 @@ def compare(observed: int | None, baseline: int | None, tolerance: int) -> dict[
 
 
 def provider_counts_for_text(
-    model_specs: list[ModelSpec],
+    specs: list[ModelSpec],
     text: str,
     anthropic_api_key: str | None,
     openai_api_key: str | None,
 ) -> dict[str, Any]:
     counts: dict[str, Any] = {}
-    openai_model = None
-    openai_count: Baseline | None = None
+    first_openai_model: str | None = None
+    first_openai_tokens: int | None = None
 
-    for spec in model_specs:
-        if spec.provider == "anthropic":
-            counts[spec.key] = asdict(anthropic_count_tokens(spec.model, text, anthropic_api_key))
-        elif spec.provider == "openai":
-            openai_model = spec.model
-            openai_count = openai_input_tokens_count(spec.model, text, openai_api_key)
-            counts[spec.key] = asdict(openai_count)
-        else:
-            counts[spec.key] = asdict(
-                Baseline("provider_count_tokens", spec.provider, None, "unavailable", f"unknown provider {spec.provider}")
-            )
+    for spec in specs:
+        baseline_count = count_tokens_for_model(spec, text, anthropic_api_key, openai_api_key)
+        counts[spec.model] = asdict(baseline_count)
+        if spec.provider == "openai" and first_openai_model is None:
+            first_openai_model = spec.model
+            first_openai_tokens = baseline_count.tokens
 
-    tiktoken = openai_tiktoken_count(openai_model or "gpt-5.5", text)
+    tiktoken = openai_tiktoken_count(first_openai_model or "gpt-5.5", text)
     counts["openai_tiktoken_secondary"] = asdict(tiktoken)
-    counts["openai_provider_vs_tiktoken"] = compare(
-        openai_count.tokens if openai_count else None,
-        tiktoken.tokens,
-        0,
-    )
+    counts["openai_provider_vs_tiktoken"] = compare(first_openai_tokens, tiktoken.tokens, 0)
     return counts
 
 
@@ -159,11 +172,8 @@ def verify(
 ) -> dict[str, Any]:
     env = load_project_env()
     report = load_report(report_path)
-    report_models = (report or {}).get("models", {})
-    model_specs = [
-        ModelSpec(spec.key, spec.provider, report_models.get(spec.key) or spec.model)
-        for spec in model_specs_from_env(env)
-    ]
+    specs = build_specs(report, env)
+    baseline = baseline_model(specs)
     anthropic_api_key = env.get("ANTHROPIC_API_KEY")
     openai_api_key = env.get("OPENAI_API_KEY")
     # The full-prompt provider calls are only meaningful when we are validating
@@ -175,16 +185,16 @@ def verify(
     for fixture in sorted(p for p in fixtures_dir.iterdir() if p.is_file() and p.suffix in FIXTURE_EXTENSIONS):
         text = fixture.read_text(encoding="utf-8")
         full_prompt = build_prompt(text)
-        text_counts = provider_counts_for_text(model_specs, text, anthropic_api_key, openai_api_key)
+        text_counts = provider_counts_for_text(specs, text, anthropic_api_key, openai_api_key)
         prompt_counts = (
             None
             if skip_full_prompt
-            else provider_counts_for_text(model_specs, full_prompt, anthropic_api_key, openai_api_key)
+            else provider_counts_for_text(specs, full_prompt, anthropic_api_key, openai_api_key)
         )
         provider_tokens = [
-            text_counts.get(spec.key, {}).get("tokens")
-            for spec in model_specs
-            if text_counts.get(spec.key, {}).get("tokens") is not None
+            text_counts.get(spec.model, {}).get("tokens")
+            for spec in specs
+            if text_counts.get(spec.model, {}).get("tokens") is not None
         ]
         size_tier = classify_size_tier(max(provider_tokens) if provider_tokens else None)
         controlled_block = {
@@ -206,22 +216,14 @@ def verify(
         usage_check = None
         if not skip_full_prompt:
             per_model = {}
-            for spec in model_specs:
-                model_reported = reported_input(report, fixture.name, spec.key)
-                model_count = prompt_counts.get(spec.key, {}).get("tokens")
-                per_model[spec.key] = {
+            for spec in specs:
+                model_reported = reported_input(report, fixture.name, spec.model)
+                model_count = prompt_counts.get(spec.model, {}).get("tokens")
+                per_model[spec.model] = {
                     "reported_input_tokens": model_reported,
                     "vs_full_prompt_count_tokens": compare(model_reported, model_count, tolerance),
                 }
-            usage_check = {
-                "per_model": per_model,
-                "claude_reported_input_tokens": per_model["claude"]["reported_input_tokens"],
-                "claude_vs_full_prompt_count_tokens": per_model["claude"]["vs_full_prompt_count_tokens"],
-                "claude_opus_4_6_reported_input_tokens": per_model["claude_opus_4_6"]["reported_input_tokens"],
-                "claude_opus_4_6_vs_full_prompt_count_tokens": per_model["claude_opus_4_6"]["vs_full_prompt_count_tokens"],
-                "openai_reported_input_tokens": per_model["openai"]["reported_input_tokens"],
-                "openai_vs_full_prompt_input_tokens_count": per_model["openai"]["vs_full_prompt_count_tokens"],
-            }
+            usage_check = {"baseline": baseline, "per_model": per_model}
         cases.append(
             {
                 "case": fixture.name,
@@ -237,24 +239,18 @@ def verify(
         usage = case.get("reported_usage_check_for_existing_benchmark_json")
         if not usage:
             continue
-        if "per_model" in usage:
-            checks.extend(model["vs_full_prompt_count_tokens"]["status"] for model in usage["per_model"].values())
-        else:
-            checks.extend(
-                [
-                    usage["claude_vs_full_prompt_count_tokens"]["status"],
-                    usage["openai_vs_full_prompt_input_tokens_count"]["status"],
-                ]
-            )
+        checks.extend(model["vs_full_prompt_count_tokens"]["status"] for model in usage["per_model"].values())
+
     result = {
-        "models": models_by_key(model_specs),
+        "models": [spec.model for spec in specs],
+        "baseline": baseline,
         "report_compared": str(report_path) if report_path else None,
         "tolerance_tokens": tolerance,
         "summary": {"pass": checks.count("pass"), "fail": checks.count("fail"), "skip": checks.count("skip")},
         "recommendation": {
-            "claude_opus_4_7": "Use Anthropic's official /v1/messages/count_tokens (SDK: client.messages.count_tokens) as the provider-side baseline for controlled text. It supports active models including claude-opus-4-7.",
-            "claude_opus_4_6": "Use the same Anthropic token-count endpoint with model claude-opus-4-6 to compare the prior Opus generation against Opus 4.7 and GPT-5.5.",
-            "gpt_5_5": "Use OpenAI's official Responses input token count endpoint (SDK: client.responses.input_tokens.count) as the provider-side baseline. Use actual Responses usage.input_tokens after a run as a second check; use tiktoken only as a local/secondary plain-text sanity check.",
+            "baseline": f"All cross-model deltas are measured against the baseline model {baseline}.",
+            "anthropic_models": "For each claude-* model, use Anthropic's /v1/messages/count_tokens (SDK: client.messages.count_tokens) on the raw fixture text as the provider-side baseline.",
+            "openai_models": "For each gpt-* model, use OpenAI's /v1/responses/input_tokens (SDK: client.responses.input_tokens.count) on the raw fixture text. Use actual Responses usage.input_tokens after a run as a second check; use tiktoken only as a local/secondary plain-text sanity check.",
             "cross_model_comparison": "For the article, compare provider count-token results on the raw fixture text only. Separately compare full prompt counts only when validating the benchmark script's actual request overhead.",
         },
         "validation_scope": {
@@ -275,27 +271,25 @@ def print_summary(result: dict[str, Any]) -> None:
         print("Counts-only run: no benchmark report supplied, no pass/fail checks performed.")
     else:
         print(f"Verification summary for benchmark usage checks: {summary} tolerance=±{result['tolerance_tokens']} token(s)")
-    print(
-        f"{'case':40} {'tier':9} {'opus47':>11} {'opus46':>11} "
-        f"{'openai_text':>12} {'openai_tiktoken':>16}"
-    )
-    print("-" * 108)
+
+    models = result["models"]
+    baseline = result["baseline"]
+    headers = ["case", "tier"] + [short_label(m) for m in models] + ["tiktoken"]
+    rows: list[list[str]] = []
     has_probe = False
     for case in result["cases"]:
         counts = case["controlled_text"]["counts"]
         tier = case.get("size_tier", "unknown")
         if tier == "probe":
             has_probe = True
-        print(
-            f"{case['case'][:40]:40} "
-            f"{tier:9} "
-            f"{str(counts['claude']['tokens']):>11} "
-            f"{str(counts['claude_opus_4_6']['tokens']):>11} "
-            f"{str(counts['openai']['tokens']):>12} "
-            f"{str(counts['openai_tiktoken_secondary']['tokens']):>16}"
-        )
+        row = [case["case"][:40], tier]
+        row += [str(counts[m]["tokens"]) for m in models]
+        row.append(str(counts["openai_tiktoken_secondary"]["tokens"]))
+        rows.append(row)
+
+    print(format_table(headers, rows))
+    print(f"\nbaseline = {baseline}; tiktoken is a secondary local sanity check on the first gpt-* model.")
     if has_probe:
-        print()
         print("Note: probe-tier fixtures are too small for stable percentage deltas. "
               "Use them as illustrative edge-case probes, not as measurements.")
 

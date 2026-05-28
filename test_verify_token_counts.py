@@ -16,19 +16,17 @@ def fake_baseline(tokens: int) -> dict[str, object]:
     }
 
 
-class VerifyThirdModelTests(unittest.TestCase):
-    def test_counts_only_result_includes_opus_4_6(self) -> None:
-        def fake_provider_counts(model_specs, text, anthropic_api_key, openai_api_key):
-            return {
-                spec.key: fake_baseline(
-                    {
-                        "claude": 150,
-                        "claude_opus_4_6": 120,
-                        "openai": 100,
-                    }[spec.key]
-                )
-                for spec in model_specs
-            } | {
+class VerifyModelListTests(unittest.TestCase):
+    def test_counts_only_result_covers_every_model_and_baseline(self) -> None:
+        token_by_model = {
+            "gpt-5.5": 100,
+            "claude-opus-4-8": 165,
+            "claude-opus-4-7": 150,
+            "claude-opus-4-6": 120,
+        }
+
+        def fake_provider_counts(specs, text, anthropic_api_key, openai_api_key):
+            return {spec.model: fake_baseline(token_by_model[spec.model]) for spec in specs} | {
                 "openai_tiktoken_secondary": fake_baseline(94),
                 "openai_provider_vs_tiktoken": {
                     "status": "fail",
@@ -55,11 +53,11 @@ class VerifyThirdModelTests(unittest.TestCase):
                     counts_only=True,
                 )
 
-        self.assertEqual(result["models"]["claude_opus_4_6"], "claude-opus-4-6")
+        self.assertEqual(result["models"], list(token_by_model))
+        self.assertEqual(result["baseline"], "gpt-5.5")
         counts = result["cases"][0]["controlled_text"]["counts"]
-        self.assertEqual(counts["claude"]["tokens"], 150)
-        self.assertEqual(counts["claude_opus_4_6"]["tokens"], 120)
-        self.assertEqual(counts["openai"]["tokens"], 100)
+        for model, tokens in token_by_model.items():
+            self.assertEqual(counts[model]["tokens"], tokens)
 
 
 if __name__ == "__main__":

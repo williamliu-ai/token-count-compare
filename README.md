@@ -1,8 +1,10 @@
 # token-count-compare
 
-A small, self-contained benchmark harness for comparing **provider-reported input-token counts** between Claude Opus 4.7, Claude Opus 4.6, and OpenAI GPT-5.5 on identical, user-controlled text.
+A small, self-contained benchmark harness for comparing **provider-reported input-token counts** between Claude Opus 4.8, Claude Opus 4.7, Claude Opus 4.6, and OpenAI GPT-5.5 on identical, user-controlled text.
 
 The goal is to produce evidence for whether input-side token accounting appears shared, similar, or materially different across these model configurations — without speculating about the underlying tokenizers.
+
+The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **every model is measured against a single baseline model** — `gpt-5.5` by default, overridable via `BASELINE_MODEL` in this project's `.env`. There are no per-provider model variables; provider is inferred from each model id (`claude…` → Anthropic, `gpt…` → OpenAI).
 
 ## Table of contents
 
@@ -27,7 +29,7 @@ The goal is to produce evidence for whether input-side token accounting appears 
 Two scripts, two measurement surfaces:
 
 1. **`verify_token_counts.py`** *(recommended; free)* — counts tokens *without* generation, using the official provider count endpoints (`messages.count_tokens` for Anthropic, `responses.input_tokens.count` for OpenAI). This is the cleanest cross-model baseline and the default workflow.
-2. **`compare_tokens.py`** *(optional; paid)* — sends an "ingest-only" prompt against each configured model's chat/completion API for every fixture file and records the provider-reported `input_tokens` / `output_tokens` / `total_tokens`. Use this only when you specifically want to confirm that the free count endpoints match real billed usage. It costs money because it now runs two Claude models plus GPT-5.5.
+2. **`compare_tokens.py`** *(optional; paid)* — sends an "ingest-only" prompt against each configured model's chat/completion API for every fixture file and records the provider-reported `input_tokens` / `output_tokens` / `total_tokens`. Use this only when you specifically want to confirm that the free count endpoints match real billed usage. It costs money because it now runs three Claude models plus GPT-5.5.
 
 Design choices worth noting:
 
@@ -43,7 +45,7 @@ Use the count endpoints for normal research runs. They count input tokens withou
 
 | Provider | Free token-count endpoint | Used by | Paid inference endpoint | Used by |
 |---|---|---|---|---|
-| Anthropic / Claude Opus 4.7 and Opus 4.6 | `POST /v1/messages/count_tokens` (`client.messages.count_tokens(...)`) | `verify_token_counts.py` | `POST /v1/messages` (`client.messages.create(...)`) | `compare_tokens.py` |
+| Anthropic / Claude Opus 4.8, Opus 4.7, and Opus 4.6 | `POST /v1/messages/count_tokens` (`client.messages.count_tokens(...)`) | `verify_token_counts.py` | `POST /v1/messages` (`client.messages.create(...)`) | `compare_tokens.py` |
 | OpenAI / GPT | `POST /v1/responses/input_tokens` (`client.responses.input_tokens.count(...)`) | `verify_token_counts.py` | `POST /v1/responses` (`client.responses.create(...)`) | `compare_tokens.py` |
 
 Cost rule of thumb:
@@ -60,7 +62,7 @@ For the article-grade comparison most users want, run only the free count endpoi
 python3 verify_token_counts.py --counts-only
 ```
 
-That call pays nothing. It uses Anthropic's `messages.count_tokens` for Opus 4.7 and Opus 4.6, plus OpenAI's `responses.input_tokens.count` for GPT-5.5. The output JSON contains controlled-text counts per provider/model, deltas, a `tiktoken` secondary baseline, and a `size_tier` per case.
+That call pays nothing. It uses Anthropic's `messages.count_tokens` for Opus 4.8, Opus 4.7, and Opus 4.6, plus OpenAI's `responses.input_tokens.count` for GPT-5.5. The output JSON contains controlled-text counts per provider/model, deltas, a `tiktoken` secondary baseline, and a `size_tier` per case.
 
 `compare_tokens.py` exists for one specific purpose: validating that the free count endpoints match real billed `usage.input_tokens`. You do not need to run it for the headline comparison. Skip it unless you need that audit-grade evidence.
 
@@ -110,17 +112,28 @@ python3 verify_token_counts.py --counts-only
 
 ## Configuration
 
-Configuration is loaded **only** from this project's `.env` file (see `.env.example`).
+Two things are configured: **which models to compare** (a code constant) and **the baseline plus credentials** (this project's `.env`, read **only** from this folder — see `.env.example`).
+
+**The model list** lives in `compare_tokens.py` as the `MODELS` constant. Edit it to add or remove models. Provider is inferred from each id, so no per-model variable is needed:
+
+```python
+MODELS = [
+    "gpt-5.5",
+    "claude-opus-4-8",
+    "claude-opus-4-7",
+    "claude-opus-4-6",
+]
+```
+
+**The `.env` variables:**
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Anthropic API key | — (required for Claude calls) |
-| `OPENAI_API_KEY` | OpenAI API key | — (required for OpenAI calls) |
-| `CLAUDE_MODEL` | Primary Claude model name | `claude-opus-4-7` |
-| `CLAUDE_OPUS_46_MODEL` | Secondary Claude model name | `claude-opus-4-6` |
-| `OPENAI_MODEL` | OpenAI model name | `gpt-5.5` |
+| `ANTHROPIC_API_KEY` | Anthropic API key | — (required for `claude-*` calls) |
+| `OPENAI_API_KEY` | OpenAI API key | — (required for `gpt-*` calls) |
+| `BASELINE_MODEL` | The model every other model is compared against. Must be one of `MODELS`. | `gpt-5.5` |
 
-Missing credentials are surfaced as per-provider errors in the JSON output rather than aborting the run, so partial benchmarks remain useful.
+There are no per-provider model variables (`CLAUDE_MODEL`, `OPENAI_MODEL`, …) — they were removed in favor of `MODELS` + `BASELINE_MODEL`. A `BASELINE_MODEL` that is not in `MODELS` raises a clear error. Missing credentials are surfaced as per-provider errors in the JSON output rather than aborting the run, so partial benchmarks remain useful.
 
 ## Usage
 
@@ -164,11 +177,8 @@ CLI flags:
 ```json
 {
   "created_at": "2026-04-29T18:30:00Z",
-  "models": {
-    "claude": "claude-opus-4-7",
-    "claude_opus_4_6": "claude-opus-4-6",
-    "openai": "gpt-5.5"
-  },
+  "baseline": "gpt-5.5",
+  "models": ["gpt-5.5", "claude-opus-4-8", "claude-opus-4-7", "claude-opus-4-6"],
   "output_token_limit": 16,
   "cases": [
     {
@@ -176,30 +186,30 @@ CLI flags:
       "characters": 5198,
       "bytes_utf8": 5198,
       "size_tier": "signal",
+      "baseline": "gpt-5.5",
       "results": {
-        "claude": {"input_tokens": 1090, "output_tokens": 2, "total_tokens": 1092},
-        "claude_opus_4_6": {"input_tokens": 1082, "output_tokens": 2, "total_tokens": 1084},
-        "openai": {"input_tokens": 1058, "output_tokens": 2, "total_tokens": 1060}
-      },
-      "delta": {
-        "input_tokens_openai_minus_claude": -32,
-        "input_tokens_pct": -2.94
+        "gpt-5.5": {"input_tokens": 1058, "output_tokens": 2, "total_tokens": 1060},
+        "claude-opus-4-8": {"input_tokens": 1101, "output_tokens": 2, "total_tokens": 1103},
+        "claude-opus-4-7": {"input_tokens": 1090, "output_tokens": 2, "total_tokens": 1092},
+        "claude-opus-4-6": {"input_tokens": 1082, "output_tokens": 2, "total_tokens": 1084}
       },
       "comparisons": {
-        "openai_minus_claude": {"input_tokens_delta": -32, "input_tokens_pct": -2.94},
-        "openai_minus_claude_opus_4_6": {"input_tokens_delta": -24, "input_tokens_pct": -2.22},
-        "claude_minus_claude_opus_4_6": {"input_tokens_delta": 8, "input_tokens_pct": 0.74}
+        "claude-opus-4-8": {"model": "claude-opus-4-8", "baseline": "gpt-5.5", "input_tokens_delta": 43, "input_tokens_pct": 4.06},
+        "claude-opus-4-7": {"model": "claude-opus-4-7", "baseline": "gpt-5.5", "input_tokens_delta": 32, "input_tokens_pct": 3.02},
+        "claude-opus-4-6": {"model": "claude-opus-4-6", "baseline": "gpt-5.5", "input_tokens_delta": 24, "input_tokens_pct": 2.27}
       }
     }
   ]
 }
 ```
 
-It also prints a compact side-by-side table:
+`models` is a flat list (display order) and `baseline` names the model each `comparisons` entry is measured against. Each comparison delta/percentage is `model − baseline`, so a positive value means the model reports more input tokens than the baseline.
+
+It also prints a compact side-by-side table — one token column per model, plus a `Δ<model>` column (model minus baseline) for each non-baseline model:
 
 ```text
-case                                     tier      chars   opus47   opus46     gpt  47-gpt  46-gpt   47-46
-01_plain_prose.txt                       signal     5198     1090     1082    1058      32      24       8
+case                  tier  chars  gpt-5.5  opus-4-8  opus-4-7  opus-4-6  Δopus-4-8  Δopus-4-7  Δopus-4-6
+01_plain_prose.txt  signal   5198     1058      1101      1090      1082         43         32         24
 ```
 
 ## Verification methodology
@@ -212,10 +222,9 @@ python3 verify_token_counts.py
 
 This writes `results/verification.json` and prints a compact table containing:
 
-- Claude Opus 4.7 fixture-text count from `client.messages.count_tokens(...)`
-- Claude Opus 4.6 fixture-text count from `client.messages.count_tokens(...)`
-- OpenAI fixture-text count from `client.responses.input_tokens.count(...)`
-- OpenAI secondary local `tiktoken` count, when available
+- One fixture-text count column per model in `MODELS`, in list order
+- Each `claude-*` count from `client.messages.count_tokens(...)`; each `gpt-*` count from `client.responses.input_tokens.count(...)`
+- A secondary local `tiktoken` count on the first `gpt-*` model, when available
 
 Optional custom paths:
 
@@ -229,11 +238,10 @@ python3 verify_token_counts.py \
 
 ### Recommended count sources
 
-- **Claude Opus 4.7** — Anthropic's official Messages token-count endpoint: `POST /v1/messages/count_tokens` (Python: `client.messages.count_tokens(...)`) with `model="claude-opus-4-7"`.
-- **Claude Opus 4.6** — the same Anthropic endpoint with `model="claude-opus-4-6"`, so the Opus-to-Opus comparison uses the same request shape and provider accounting surface.
-- **GPT-5.5** — OpenAI's official Responses input-token count endpoint: `POST /v1/responses/input_tokens` (Python: `client.responses.input_tokens.count(...)`). It accepts the same input format as the Responses API and returns the exact input count the model will receive.
+- **Every `claude-*` model** — Anthropic's official Messages token-count endpoint: `POST /v1/messages/count_tokens` (Python: `client.messages.count_tokens(...)`) with that model id. All Claude generations use the identical request shape and provider accounting surface.
+- **Every `gpt-*` model** — OpenAI's official Responses input-token count endpoint: `POST /v1/responses/input_tokens` (Python: `client.responses.input_tokens.count(...)`). It accepts the same input format as the Responses API and returns the exact input count the model will receive.
 - **Actual API usage fields** — after generation, compare `usage.input_tokens` to the provider count endpoint for the full request payload. This validates accounting for the benchmark request, but it includes prompt/template overhead.
-- **Local tokenizer** — use `tiktoken` only as a secondary sanity check for OpenAI plain text. It is not the primary GPT-5.5 baseline unless it explicitly knows the deployed model encoding.
+- **Local tokenizer** — use `tiktoken` only as a secondary sanity check for the first `gpt-*` model's plain text. It is not the primary baseline unless it explicitly knows the deployed model encoding.
 
 ### What verification checks
 
@@ -266,23 +274,28 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The latest expanded count-only run uses all 31 fixtures from the flat `fixtures/` directory and writes:
+The latest expanded count-only run (2026-05-28) uses all 31 fixtures from the flat `fixtures/` directory, with `gpt-5.5` as the baseline and zero provider errors, and writes:
 
-- `results/verification-counts-only-2026-05-10-opus46.json`
+- `results/verification-counts-only-2026-05-28.json`
 
-Counts-only totals across the 31-fixture corpus:
+Counts-only totals across the 31-fixture corpus (baseline = GPT-5.5):
 
 | Model | Raw-text input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
 |---|---:|---:|---:|
 | Claude Opus 4.7 | 69,035 | 24,241 | 54.12% |
+| Claude Opus 4.8 | 68,878 | 24,084 | 53.77% |
 | Claude Opus 4.6 | 53,955 | 9,161 | 20.45% |
 | GPT-5.5 | 44,794 | — | — |
 
-Opus 4.7 reports **15,080** more raw-text input tokens than Opus 4.6 on the same 31 fixtures, or **27.95%** more than Opus 4.6. This is the recommended free comparison path.
+Opus-to-Opus on the same 31 fixtures:
 
-The previous two-model expanded run is still available at:
+- **Opus 4.8 reports essentially the same as Opus 4.7** — 157 *fewer* raw-text input tokens (−0.23%). The newest generation did not change input-side token accounting in any material way relative to 4.7.
+- **Opus 4.8 reports 14,923 more tokens than Opus 4.6** (+27.66%) — the 4.6 → 4.7/4.8 jump is the real shift; 4.7 → 4.8 is flat.
 
-- `results/verification-counts-only-2026-05-03.json`
+This is the recommended free comparison path. The prior runs are still available:
+
+- `results/verification-counts-only-2026-05-10-opus46.json` (Opus 4.7 / 4.6 / GPT-5.5)
+- `results/verification-counts-only-2026-05-03.json` (two-model)
 
 The earlier 21-fixture benchmark-validation artifacts remain useful for proving the count endpoints match full-prompt usage:
 
