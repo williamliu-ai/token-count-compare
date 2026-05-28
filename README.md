@@ -282,8 +282,8 @@ Counts-only totals across the 31-fixture corpus (baseline = GPT-5.5):
 
 | Model | Raw-text input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
 |---|---:|---:|---:|
-| Claude Opus 4.7 | 69,035 | 24,241 | 54.12% |
 | Claude Opus 4.8 | 68,878 | 24,084 | 53.77% |
+| Claude Opus 4.7 | 69,035 | 24,241 | 54.12% |
 | Claude Opus 4.6 | 53,955 | 9,161 | 20.45% |
 | GPT-5.5 | 44,794 | — | — |
 
@@ -292,10 +292,10 @@ Opus-to-Opus on the same 31 fixtures:
 - **Opus 4.8 reports essentially the same as Opus 4.7** — 157 *fewer* raw-text input tokens (−0.23%). The newest generation did not change input-side token accounting in any material way relative to 4.7.
 - **Opus 4.8 reports 14,923 more tokens than Opus 4.6** (+27.66%) — the 4.6 → 4.7/4.8 jump is the real shift; 4.7 → 4.8 is flat.
 
-This is the recommended free comparison path. The prior runs are still available:
+This is the recommended free comparison path. Prior runs — superseded by the 2026-05-28 four-model run above, kept for history — remain available:
 
-- `results/verification-counts-only-2026-05-10-opus46.json` (Opus 4.7 / 4.6 / GPT-5.5)
-- `results/verification-counts-only-2026-05-03.json` (two-model)
+- `results/verification-counts-only-2026-05-10-opus46.json` — Opus 4.7 / 4.6 / GPT-5.5 (no Opus 4.8; predates the `MODELS` / `BASELINE_MODEL` refactor)
+- `results/verification-counts-only-2026-05-03.json` — two-model (Opus 4.7 / GPT-5.5)
 
 The earlier 21-fixture benchmark-validation artifacts remain useful for proving the count endpoints match full-prompt usage:
 
