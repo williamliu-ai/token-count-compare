@@ -48,6 +48,7 @@ class ComparisonTests(unittest.TestCase):
     def test_each_model_compared_against_baseline(self) -> None:
         results = {
             "gpt-5.5": UsageResult("gpt-5.5", 100, 1, 101, "."),
+            "claude-fable-5": UsageResult("claude-fable-5", 170, 1, 171, "."),
             "claude-opus-4-8": UsageResult("claude-opus-4-8", 160, 1, 161, "."),
             "claude-opus-4-7": UsageResult("claude-opus-4-7", 150, 1, 151, "."),
             "claude-opus-4-6": UsageResult("claude-opus-4-6", 120, 1, 121, "."),
@@ -57,8 +58,9 @@ class ComparisonTests(unittest.TestCase):
 
         # baseline itself is never a comparison entry
         self.assertNotIn("gpt-5.5", comparisons)
-        self.assertEqual(set(comparisons), {"claude-opus-4-8", "claude-opus-4-7", "claude-opus-4-6"})
+        self.assertEqual(set(comparisons), {"claude-fable-5", "claude-opus-4-8", "claude-opus-4-7", "claude-opus-4-6"})
         # delta is model minus baseline
+        self.assertEqual(comparisons["claude-fable-5"]["input_tokens_delta"], 70)
         self.assertEqual(comparisons["claude-opus-4-8"]["input_tokens_delta"], 60)
         self.assertEqual(comparisons["claude-opus-4-7"]["input_tokens_delta"], 50)
         self.assertEqual(comparisons["claude-opus-4-6"]["input_tokens_delta"], 20)

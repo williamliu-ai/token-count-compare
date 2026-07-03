@@ -20,6 +20,7 @@ class VerifyModelListTests(unittest.TestCase):
     def test_counts_only_result_covers_every_model_and_baseline(self) -> None:
         token_by_model = {
             "gpt-5.5": 100,
+            "claude-fable-5": 170,
             "claude-opus-4-8": 165,
             "claude-opus-4-7": 150,
             "claude-opus-4-6": 120,
