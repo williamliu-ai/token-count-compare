@@ -1,6 +1,6 @@
 # token-count-compare
 
-A small, self-contained benchmark harness for comparing **provider-reported input-token counts** between Claude Fable 5, Claude Opus 4.8, Claude Opus 4.7, Claude Opus 4.6, and OpenAI GPT-5.5 on identical, user-controlled text.
+A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra, Claude Fable 5.1/5, and Claude Opus 4.8/4.7/4.6 on identical, user-controlled text.
 
 The goal is to produce evidence for whether input-side token accounting appears shared, similar, or materially different across these model configurations — without speculating about the underlying tokenizers.
 
@@ -29,7 +29,7 @@ The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **eve
 Two scripts, two measurement surfaces:
 
 1. **`verify_token_counts.py`** *(recommended; free)* — counts tokens *without* generation, using the official provider count endpoints (`messages.count_tokens` for Anthropic, `responses.input_tokens.count` for OpenAI). This is the cleanest cross-model baseline and the default workflow.
-2. **`compare_tokens.py`** *(optional; paid)* — sends an "ingest-only" prompt against each configured model's chat/completion API for every fixture file and records the provider-reported `input_tokens` / `output_tokens` / `total_tokens`. Use this only when you specifically want to confirm that the free count endpoints match real billed usage. It costs money because it now runs three Claude models plus GPT-5.5.
+2. **`compare_tokens.py`** *(optional; paid)* — sends an "ingest-only" prompt against each configured model's chat/completion API for every fixture file and records the provider-reported `input_tokens` / `output_tokens` / `total_tokens`. Use this only when you specifically want to confirm that the free count endpoints match real billed usage. It costs money because it makes generation requests for every configured model.
 
 Design choices worth noting:
 
@@ -45,7 +45,7 @@ Use the count endpoints for normal research runs. They count input tokens withou
 
 | Provider | Free token-count endpoint | Used by | Paid inference endpoint | Used by |
 |---|---|---|---|---|
-| Anthropic / Claude Fable 5, Opus 4.8, Opus 4.7, and Opus 4.6 | `POST /v1/messages/count_tokens` (`client.messages.count_tokens(...)`) | `verify_token_counts.py` | `POST /v1/messages` (`client.messages.create(...)`) | `compare_tokens.py` |
+| Anthropic / configured Claude models | `POST /v1/messages/count_tokens` (`client.messages.count_tokens(...)`) | `verify_token_counts.py` | `POST /v1/messages` (`client.messages.create(...)`) | `compare_tokens.py` |
 | OpenAI / GPT | `POST /v1/responses/input_tokens` (`client.responses.input_tokens.count(...)`) | `verify_token_counts.py` | `POST /v1/responses` (`client.responses.create(...)`) | `compare_tokens.py` |
 
 Cost rule of thumb:
@@ -62,7 +62,7 @@ For the article-grade comparison most users want, run only the free count endpoi
 python3 verify_token_counts.py --counts-only
 ```
 
-That call pays nothing. It uses Anthropic's `messages.count_tokens` for Fable 5, Opus 4.8, Opus 4.7, and Opus 4.6, plus OpenAI's `responses.input_tokens.count` for GPT-5.5. The output JSON contains controlled-text counts per provider/model, deltas, a `tiktoken` secondary baseline, and a `size_tier` per case.
+That call pays nothing. It uses Anthropic's `messages.count_tokens` for the configured Claude models and OpenAI's `responses.input_tokens.count` for the configured GPT models. The output JSON contains controlled-text counts per provider/model, deltas, a `tiktoken` secondary baseline, and a `size_tier` per case.
 
 `compare_tokens.py` exists for one specific purpose: validating that the free count endpoints match real billed `usage.input_tokens`. You do not need to run it for the headline comparison. Skip it unless you need that audit-grade evidence.
 
@@ -119,12 +119,19 @@ Two things are configured: **which models to compare** (a code constant) and **t
 ```python
 MODELS = [
     "gpt-5.5",
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
+    "gpt-6-astra",
+    "claude-fable-5-1",
     "claude-fable-5",
     "claude-opus-4-8",
     "claude-opus-4-7",
     "claude-opus-4-6",
 ]
 ```
+
+Model IDs were checked against the [OpenAI model catalog](https://developers.openai.com/api/docs/models) and [Claude Fable 5.1 documentation](https://platform.claude.com/docs/en/models/fable-5-1/overview) on 2026-09-05. GPT-6 uses `gpt-6-astra`; Fable 5.1 uses `claude-fable-5-1`. Fable 5 was already configured and remains in the comparison.
 
 **The `.env` variables:**
 
@@ -277,7 +284,43 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The latest expanded count-only run (2026-07-03) adds **Claude Fable 5** to the model set. It reuses the GPT-5.5 and Opus 4.8/4.7/4.6 counts from the 2026-05-28 run (the count endpoints are deterministic for a given model + text, so re-running them is unnecessary) and adds fresh `claude-fable-5` counts on the same 31 fixtures, with `gpt-5.5` as the baseline and zero provider errors, and writes:
+The **2026-09-05 partial refresh** configures ten models and attempts the six requested models on all 31 existing fixtures. Fable 5 was already configured; it was remeasured alongside Fable 5.1. The four new GPT models could not be measured because OpenAI rejected the project-local API key with HTTP 401. After GPT-6 Astra preflight and GPT-5.6 Sol failed authentication, remaining OpenAI calls were skipped; Terra and Luna were not individually queried. Their counts are **unavailable**, not zero, and no conclusions about them are supported yet.
+
+The checked-in [measurement report](results/verification-counts-only-2026-09-05.json) records per-fixture counts/errors, current fixture SHA-256 hashes, the attempt timestamp, and model-level fresh/historical provenance. GPT-5.5 and Opus counts are retained from the local 2026-07-03 artifact, which in turn reused 2026-05-28 counts. Fixture character and byte lengths match that artifact; it did not record hashes, so matching historical bytes cannot be established from it alone. The baseline comparisons below therefore mix fresh Fable measurements with historical GPT-5.5 measurements.
+
+| Model | Corpus input tokens | vs historical GPT-5.5 | Measurement status |
+|---|---:|---:|---|
+| `gpt-5.5` | 44,794 | +0.00% | Historical: 2026-05-28 |
+| `gpt-5.6-sol` | unavailable | — | Authentication failed; not measured |
+| `gpt-5.6-terra` | unavailable | — | Authentication failed; not measured |
+| `gpt-5.6-luna` | unavailable | — | Authentication failed; not measured |
+| `gpt-6-astra` | unavailable | — | Authentication failed; not measured |
+| `claude-fable-5-1` | 68,940 | +53.90% | Fresh count-only measurement |
+| `claude-fable-5` | 68,878 | +53.77% | Fresh count-only measurement |
+| `claude-opus-4-8` | 68,878 | +53.77% | Historical: 2026-05-28 |
+| `claude-opus-4-7` | 69,035 | +54.12% | Historical: 2026-05-28 |
+| `claude-opus-4-6` | 53,955 | +20.45% | Historical: 2026-05-28 |
+
+Fresh Fable findings:
+
+- Fable 5.1: **68,940** input tokens; Fable 5: **68,878**.
+- Fable 5.1 reports **62 more tokens (+0.09%)**, exactly **two more on every fixture**. This constant offset is consistent with request-formatting overhead, but the counts alone do not establish its cause or tokenizer identity.
+- Fable 5 matches its previous count on all 31 fixtures.
+- These are raw-text count-endpoint observations, with no generation or billed-usage validation. The report's zero pass/fail summary means no inference-usage checks ran; it does **not** mean every provider measurement succeeded.
+
+To complete the GPT measurements, replace `OPENAI_API_KEY` in the project-local `.env`, then run a fresh full-set count-only report:
+
+```bash
+python3 verify_token_counts.py --counts-only \
+  --report results/no-benchmark-report.json \
+  --out results/verification-counts-only-completed.json
+```
+
+Use a nonexistent `--report` path as shown so an old benchmark report cannot override the configured model list. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. This command refreshes the baseline and all comparison models too; do not relabel this partial artifact as complete without fresh successful measurements.
+
+### Historical results (2026-07-03)
+
+The historical expanded count-only run (2026-07-03) adds **Claude Fable 5** to the model set. It reuses the GPT-5.5 and Opus 4.8/4.7/4.6 counts from the 2026-05-28 run (these are historical measurements, not fresh confirmation of current alias behavior) and adds fresh `claude-fable-5` counts on the same 31 fixtures, with `gpt-5.5` as the baseline and zero provider errors, and writes:
 
 - `results/verification-counts-only-2026-07-03.json` — five-model run (adds Fable 5)
 - `results/verification-counts-only-2026-05-28.json` — the four-model run whose GPT-5.5/Opus counts it reuses
@@ -294,7 +337,7 @@ Counts-only totals across the 31-fixture corpus (baseline = GPT-5.5):
 
 Key finding — **Fable 5 and Opus 4.8 report identical input-token counts**:
 
-- **Fable 5 matches Opus 4.8 exactly on all 31 of 31 fixtures** (byte-for-byte per fixture, not just in aggregate — e.g. `01_plain_prose.txt` 1,514/1,514, `S1_long_code.py` 6,704/6,704). The two models share the same input-token accounting surface. Fable 5 differs from Opus 4.7 on every fixture (e.g. 1,514 vs 1,519), which confirms these are independent measured counts rather than a copied column.
+- **Fable 5 matches Opus 4.8 exactly on all 31 of 31 fixtures** (byte-for-byte per fixture, not just in aggregate — e.g. `01_plain_prose.txt` 1,514/1,514, `S1_long_code.py` 6,704/6,704). These observations show matching reported counts on this corpus; they do not establish tokenizer identity. Fable 5 differs from Opus 4.7 on every fixture (e.g. 1,514 vs 1,519), which confirms these are independent measured counts rather than a copied column.
 - **Fable 5 reports essentially the same as Opus 4.7** — 157 *fewer* raw-text input tokens (−0.23%), the same small gap Opus 4.8 shows.
 - **Fable 5 reports 14,923 more tokens than Opus 4.6** (+27.66%) — the 4.6 → 4.7/4.8/Fable-5 jump is the real shift; the 4.7 → 4.8 → Fable 5 tier is flat.
 
@@ -380,7 +423,7 @@ These cover content types missing from the original set: structured data, Markdo
 ├── requirements.txt
 ├── .env.example             # Copy to .env and fill in
 ├── fixtures/                # Flat fixture corpus (mixed content, code-top-10, coverage gaps, scaling)
-└── results/                 # JSON outputs (latest.json is gitignored)
+└── results/                 # Local outputs; selected published reports explicitly committed
 ```
 
 ## Caveats

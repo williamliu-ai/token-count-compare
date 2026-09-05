@@ -20,6 +20,11 @@ class VerifyModelListTests(unittest.TestCase):
     def test_counts_only_result_covers_every_model_and_baseline(self) -> None:
         token_by_model = {
             "gpt-5.5": 100,
+            "gpt-5.6-sol": 101,
+            "gpt-5.6-terra": 102,
+            "gpt-5.6-luna": 103,
+            "gpt-6-astra": 104,
+            "claude-fable-5-1": 180,
             "claude-fable-5": 170,
             "claude-opus-4-8": 165,
             "claude-opus-4-7": 150,

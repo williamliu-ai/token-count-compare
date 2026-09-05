@@ -28,6 +28,11 @@ SIZE_TIER_SCALING_MIN_TOKENS = 4000
 # id (see ``provider_for_model``). Edit this list to change the comparison set.
 MODELS = [
     "gpt-5.5",
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
+    "gpt-6-astra",
+    "claude-fable-5-1",
     "claude-fable-5",
     "claude-opus-4-8",
     "claude-opus-4-7",
