@@ -1,0 +1,3031 @@
+{
+  "models": [
+    "gpt-5.5",
+    "gpt-5.6-sol",
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
+    "gpt-6-astra",
+    "claude-fable-5-1",
+    "claude-fable-5",
+    "claude-opus-4-8",
+    "claude-opus-4-7",
+    "claude-opus-4-6"
+  ],
+  "baseline": "gpt-5.5",
+  "report_compared": null,
+  "tolerance_tokens": 0,
+  "summary": {
+    "pass": 0,
+    "fail": 0,
+    "skip": 0
+  },
+  "recommendation": {
+    "baseline": "All cross-model deltas are measured against the baseline model gpt-5.5.",
+    "anthropic_models": "For each claude-* model, use Anthropic's /v1/messages/count_tokens (SDK: client.messages.count_tokens) on the raw fixture text as the provider-side baseline.",
+    "openai_models": "For each gpt-* model, use OpenAI's /v1/responses/input_tokens (SDK: client.responses.input_tokens.count) on the raw fixture text. Use actual Responses usage.input_tokens after a run as a second check; use tiktoken only as a local/secondary plain-text sanity check.",
+    "cross_model_comparison": "For the article, compare provider count-token results on the raw fixture text only. Separately compare full prompt counts only when validating the benchmark script's actual request overhead."
+  },
+  "validation_scope": {
+    "exact_token_count": "Provider count endpoints are the best authoritative accounting surfaces. OpenAI documents exact count for Responses input; Anthropic documents count_tokens but notes counts are estimates and may differ slightly from create-message usage.",
+    "input_token_accounting": "Actual API usage.input_tokens remains the final billing/usage observation after an inference request, but it includes the exact request payload and any provider request formatting.",
+    "prompt_output_noise": "Controlled-text counts use fixture text only and make no generation request. Full-prompt checks are reported separately so prompt template overhead is not mistaken for text-tokenization behavior."
+  },
+  "cases": [
+    {
+      "case": "01_plain_prose.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 5198,
+        "bytes_utf8": 5198,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 993,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 993,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 993,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 993,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 993,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1516,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1514,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1514,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1519,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1047,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 987,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "02_code.py",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 5025,
+        "bytes_utf8": 5033,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1253,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1253,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1253,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1253,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1253,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2021,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2019,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2019,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2024,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1563,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1247,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "03_mixed_punctuation.txt",
+      "size_tier": "probe",
+      "controlled_text": {
+        "characters": 197,
+        "bytes_utf8": 224,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 67,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 67,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 67,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 67,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 67,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 105,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 103,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 103,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 108,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 89,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 61,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "04_long_form.txt",
+      "size_tier": "scaling",
+      "controlled_text": {
+        "characters": 15877,
+        "bytes_utf8": 15877,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3059,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3059,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3059,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3059,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3059,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 4602,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 4600,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 4600,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 4605,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 3250,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 3053,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "05_pdf_text_blob.txt",
+      "size_tier": "probe",
+      "controlled_text": {
+        "characters": 785,
+        "bytes_utf8": 787,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 151,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 151,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 151,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 151,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 151,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 267,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 265,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 265,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 270,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 172,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 145,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "06_article_rewrite_request.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4195,
+        "bytes_utf8": 4195,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 799,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 799,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 799,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 799,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 799,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1227,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1225,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1225,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1230,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 857,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 793,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "07_code_review_context.py",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4757,
+        "bytes_utf8": 4757,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1098,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1098,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1098,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1098,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1098,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1756,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1754,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1754,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1759,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1365,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1092,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "08_mixed_prose_bullets.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4703,
+        "bytes_utf8": 4703,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 931,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 931,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 931,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 931,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 931,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1486,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1484,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1484,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1489,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1022,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 925,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "09_technical_spec_language.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 5521,
+        "bytes_utf8": 5521,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1072,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1072,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1072,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1072,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1072,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1777,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1775,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1775,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1780,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1225,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1066,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "10_long_form_article_excerpt.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4579,
+        "bytes_utf8": 4579,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 864,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 864,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 864,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 864,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 864,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1307,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1305,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1305,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1310,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 921,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 858,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "11_code_heavy_comments_identifiers.ts",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 5492,
+        "bytes_utf8": 5492,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1293,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1293,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1293,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1293,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1293,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2173,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2171,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2171,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2176,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1646,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1287,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "12_code_python.py",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3134,
+        "bytes_utf8": 3134,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 860,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 860,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 860,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 860,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 860,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1337,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1335,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1335,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1340,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1035,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 854,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "13_code_javascript.js",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 2294,
+        "bytes_utf8": 2294,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 671,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 671,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 671,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 671,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 671,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1000,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 998,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 998,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1003,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 787,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 665,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "14_code_java.java",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3369,
+        "bytes_utf8": 3369,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 802,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 802,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 802,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 802,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 802,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1302,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1300,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1300,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1305,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 991,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 796,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "15_code_csharp.cs",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 2972,
+        "bytes_utf8": 2972,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 724,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 724,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 724,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 724,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 724,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1153,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1151,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1151,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1156,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 895,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 718,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "16_code_cpp.cpp",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3191,
+        "bytes_utf8": 3191,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 878,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 878,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 878,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 878,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 878,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1371,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1369,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1369,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1374,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1106,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 872,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "17_code_typescript.ts",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3087,
+        "bytes_utf8": 3087,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 813,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 813,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 813,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 813,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 813,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1287,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1285,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1285,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1290,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 973,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 807,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "18_code_php.php",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 2735,
+        "bytes_utf8": 2735,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 723,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 723,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 723,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 723,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 723,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1102,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1100,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1100,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1105,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 879,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 717,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "19_code_go.go",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 2608,
+        "bytes_utf8": 2608,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 719,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 719,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 719,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 719,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 719,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1155,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1153,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1153,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1158,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 891,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 713,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "20_code_rust.rs",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3025,
+        "bytes_utf8": 3025,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 922,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 922,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 922,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 922,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 922,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1422,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1420,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1420,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1425,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1108,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 916,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "21_code_swift.swift",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3300,
+        "bytes_utf8": 3300,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 814,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 814,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 814,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 814,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 814,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1271,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1269,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1269,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1274,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 992,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 808,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "22_json_payload.json",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 3492,
+        "bytes_utf8": 3492,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1040,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1040,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1040,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1040,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1040,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1507,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1505,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1505,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1510,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1239,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1034,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "23_markdown_doc.md",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4764,
+        "bytes_utf8": 4772,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1080,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1080,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1080,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1080,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1080,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1684,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1682,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1682,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1687,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1216,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1074,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "24_chat_transcript.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4319,
+        "bytes_utf8": 4319,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 978,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 978,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 978,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 978,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 978,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1456,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1454,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1454,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1459,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1067,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 972,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "25_log_lines.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 6057,
+        "bytes_utf8": 6057,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 2171,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 2171,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 2171,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 2171,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 2171,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 3121,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 3119,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 3119,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 3125,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2587,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 2165,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "26_unified_diff.patch",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 6559,
+        "bytes_utf8": 6563,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1709,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1709,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1709,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1709,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1709,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2815,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2813,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2813,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2818,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2133,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1703,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "27_sql_query.sql",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 4351,
+        "bytes_utf8": 4351,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1135,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1135,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1135,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1135,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1135,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2040,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2038,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2038,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2043,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1498,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1129,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "28_stack_trace.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 5109,
+        "bytes_utf8": 5109,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1290,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1290,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1290,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1290,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 1290,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2198,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2196,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2196,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 2201,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1702,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 1284,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "29_cjk_long_form.txt",
+      "size_tier": "signal",
+      "controlled_text": {
+        "characters": 1054,
+        "bytes_utf8": 3026,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 826,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 826,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 826,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 826,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 826,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1110,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1108,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1108,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1114,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 1109,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 820,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "S1_long_code.py",
+      "size_tier": "scaling",
+      "controlled_text": {
+        "characters": 17683,
+        "bytes_utf8": 17683,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3959,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3959,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3959,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3959,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 3959,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 6706,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 6704,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 6704,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 6709,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 5047,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 3953,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    },
+    {
+      "case": "S2_long_structured.json",
+      "size_tier": "scaling",
+      "controlled_text": {
+        "characters": 38320,
+        "bytes_utf8": 38320,
+        "counts": {
+          "gpt-5.5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 11100,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-sol": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 11100,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-terra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 11100,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-5.6-luna": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 11100,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "gpt-6-astra": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "openai.responses.input_tokens.count",
+            "tokens": 11100,
+            "exactness": "official provider-side count; OpenAI docs say it accepts Responses API input format and returns the exact count the model will receive",
+            "error": null
+          },
+          "claude-fable-5-1": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 15666,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-fable-5": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 15664,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-8": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 15664,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-7": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 15669,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "claude-opus-4-6": {
+            "kind": "provider_count_tokens",
+            "tokenizer_or_api": "anthropic.messages.count_tokens",
+            "tokens": 13543,
+            "exactness": "official provider-side count for the same Messages request shape; Anthropic docs call counts estimates that can differ slightly from create-message usage",
+            "error": null
+          },
+          "openai_tiktoken_secondary": {
+            "kind": "local_tokenizer",
+            "tokenizer_or_api": "o200k_base",
+            "tokens": 11094,
+            "exactness": "fallback o200k_base; useful plain-text evidence, not an exact gpt-5.5 guarantee",
+            "error": null
+          },
+          "openai_provider_vs_tiktoken": {
+            "status": "fail",
+            "delta": 6,
+            "within_tolerance": false
+          }
+        },
+        "note": "This is the cleanest cross-model comparison surface: the fixture text only, no benchmark prompt and no generated output."
+      },
+      "full_benchmark_prompt": null,
+      "reported_usage_check_for_existing_benchmark_json": null
+    }
+  ],
+  "measurement_provenance": {
+    "started_at_utc": "2026-09-05T23:39:58.558066+00:00",
+    "completed_at_utc": "2026-09-05T23:41:12.564238+00:00",
+    "refreshed_models": [
+      "gpt-5.5",
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-5.6-luna",
+      "gpt-6-astra",
+      "claude-fable-5-1",
+      "claude-fable-5",
+      "claude-opus-4-8",
+      "claude-opus-4-7",
+      "claude-opus-4-6"
+    ],
+    "reused_models": [],
+    "method": "verify_token_counts.verify(Path(\"fixtures\"), None, out, 0, counts_only=True); every provider/model count freshly requested, no generation requests.",
+    "fixture_sha256": {
+      "01_plain_prose.txt": "753622ffe514eac3330095cabaccb4c8360aff886c9699c128b8b622687c2cbd",
+      "02_code.py": "301e6d8de2dde65172ae1f8afb49fbc06f1ea0b678f902c4c05a2f4b07980405",
+      "03_mixed_punctuation.txt": "253a8d28107b39f7203b17f0a347aadabd52b09b888d26b5e6aff51fa7f4bb88",
+      "04_long_form.txt": "0b02d8f158b07bfdb751b0d480d0e65f875e8949dbe580b2eebba2ac01e4759d",
+      "05_pdf_text_blob.txt": "d95096b1ac885aa64dcb35307be106a7683f02aa6cb2795345776e8d853e1109",
+      "06_article_rewrite_request.txt": "892718d551e2c8106d2561593a0a4d6a3b73e5a78fd2b42d7b2f2ea9b404c51e",
+      "07_code_review_context.py": "c5a5a9e225a593a1175fbb7d5508afa7f68baf8a7e77a3c6ad4a49308d23594d",
+      "08_mixed_prose_bullets.txt": "3db02d9747279779c461c525f995eb3e8c05f67690247d68823f7702242a167c",
+      "09_technical_spec_language.txt": "f66c91cd9658abb604bbbec67a0374b0dfe63eff4749688904f18110b862a821",
+      "10_long_form_article_excerpt.txt": "a90f29671844316adb895a5ce037e52c52bd86406103680fbd2d55fac9bf167c",
+      "11_code_heavy_comments_identifiers.ts": "5f9bdc73462935aada0c424ba696d2cf60373fa0b2fb4f1ebae0a8a37b161613",
+      "12_code_python.py": "8a046484d93c6ff1634129b0767f0e4a66878a83136d2a5faef1d94832d8498e",
+      "13_code_javascript.js": "0c6507cdc174fff67ee679a22f1e63b62ce78cec71ea5af095e66f766450288a",
+      "14_code_java.java": "d22a357c339a7fa6a00cbd9ffbbbfa64ceab03357de54d85832664a2ce3ed712",
+      "15_code_csharp.cs": "6ac3a57c98690cf40efb82f5239221102f88943f86f31cde576c28458fec6921",
+      "16_code_cpp.cpp": "2946e0bf67fcb8ddb86b1765e4827bc7996d9943cf3deedcd0edcab9286fef6a",
+      "17_code_typescript.ts": "8ccbc484ed4dcfbe60a1ef7572d7337a1e0751fbea3b00670f932059f745611b",
+      "18_code_php.php": "2f38fc2640c775989a48bf175cccaaed61328af34fdaca42a84011b60c1ac77f",
+      "19_code_go.go": "b1e60afeaf2caf4847adfe0a1acd2b24f5e148bb9ebe377ba0447b1b71dd143a",
+      "20_code_rust.rs": "9c46cc1e44b2b33240c13a8eccace09318b0aa621fda8c7ef0f7e0fd7b2f271a",
+      "21_code_swift.swift": "90146d638ac646bc37e8f0ec367de0fbac9e2eb0e7c146b39294687a78b2b1aa",
+      "22_json_payload.json": "45ae8552d547884c61b28fce827b59c9c210a159cfc126cbb6c4f3b6f54165fd",
+      "23_markdown_doc.md": "a7d3d91a5b21a7d95d327966b40643b6ceb16da4850dfded7af7197def25ae3c",
+      "24_chat_transcript.txt": "341dddfd9ca36446508517c7332557d184072453c76bd25095c92cd4caddd3eb",
+      "25_log_lines.txt": "c1cde49a230eaf07b40984c05514db1b5a2103aee8df035f68f2598717c5aafc",
+      "26_unified_diff.patch": "cdafa86e6b9f4e4591af2b7d6d6af640fa0c5fe819c24a2f2bf92cc683981e88",
+      "27_sql_query.sql": "90ba48f70d5faaaa6dcd685c79023b0b45a65815d9b8e563caf200c5c4b37776",
+      "28_stack_trace.txt": "cca8c785608e98a076cc7d7d31555a49bb01c6fb8a698168d87689ac68fcae1b",
+      "29_cjk_long_form.txt": "e67bfd10fe4fc071ed3ac66ab8d8053597004dadacac7904dab566638dcd635f",
+      "S1_long_code.py": "53fb5367c2c0eedaa543ab12aa2d7eed96e40bf05e6b460ffbc77a7ada4bd56b",
+      "S2_long_structured.json": "021d03811d7b3d29d9f708fabd8f89bf3429640f58a00eb098c7b72625e98e03"
+    }
+  }
+}

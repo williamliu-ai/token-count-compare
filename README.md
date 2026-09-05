@@ -284,39 +284,42 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The **2026-09-05 partial refresh** configures ten models and attempts the six requested models on all 31 existing fixtures. Fable 5 was already configured; it was remeasured alongside Fable 5.1. The four new GPT models could not be measured because OpenAI rejected the project-local API key with HTTP 401. After GPT-6 Astra preflight and GPT-5.6 Sol failed authentication, remaining OpenAI calls were skipped; Terra and Luna were not individually queried. Their counts are **unavailable**, not zero, and no conclusions about them are supported yet.
+The **2026-09-05 completed count-only run** freshly measured all ten configured models across all 31 fixtures: **310 successful provider counts, zero provider errors**. This includes GPT-5.6 Sol/Terra/Luna, GPT-6 Astra, and Fable 5.1, plus a fresh Fable 5 measurement and fresh baseline/Opus comparisons. No historical counts were reused.
 
-The checked-in [measurement report](results/verification-counts-only-2026-09-05.json) records per-fixture counts/errors, current fixture SHA-256 hashes, the attempt timestamp, and model-level fresh/historical provenance. GPT-5.5 and Opus counts are retained from the local 2026-07-03 artifact, which in turn reused 2026-05-28 counts. Fixture character and byte lengths match that artifact; it did not record hashes, so matching historical bytes cannot be established from it alone. The baseline comparisons below therefore mix fresh Fable measurements with historical GPT-5.5 measurements.
+The checked-in [completed measurement report](results/verification-counts-only-2026-09-05-completed.json) records per-fixture counts, current fixture SHA-256 hashes, start/completion timestamps, and measurement provenance. Its fixture hashes match the earlier partial run exactly.
 
-| Model | Corpus input tokens | vs historical GPT-5.5 | Measurement status |
-|---|---:|---:|---|
-| `gpt-5.5` | 44,794 | +0.00% | Historical: 2026-05-28 |
-| `gpt-5.6-sol` | unavailable | — | Authentication failed; not measured |
-| `gpt-5.6-terra` | unavailable | — | Authentication failed; not measured |
-| `gpt-5.6-luna` | unavailable | — | Authentication failed; not measured |
-| `gpt-6-astra` | unavailable | — | Authentication failed; not measured |
-| `claude-fable-5-1` | 68,940 | +53.90% | Fresh count-only measurement |
-| `claude-fable-5` | 68,878 | +53.77% | Fresh count-only measurement |
-| `claude-opus-4-8` | 68,878 | +53.77% | Historical: 2026-05-28 |
-| `claude-opus-4-7` | 69,035 | +54.12% | Historical: 2026-05-28 |
-| `claude-opus-4-6` | 53,955 | +20.45% | Historical: 2026-05-28 |
+| Model | Corpus input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
+|---|---:|---:|---:|
+| `gpt-5.5` | 44,794 | 0 | 0.00% |
+| `gpt-5.6-sol` | 44,794 | 0 | 0.00% |
+| `gpt-5.6-terra` | 44,794 | 0 | 0.00% |
+| `gpt-5.6-luna` | 44,794 | 0 | 0.00% |
+| `gpt-6-astra` | 44,794 | 0 | 0.00% |
+| `claude-fable-5-1` | 68,940 | 24,146 | 53.90% |
+| `claude-fable-5` | 68,878 | 24,084 | 53.77% |
+| `claude-opus-4-8` | 68,878 | 24,084 | 53.77% |
+| `claude-opus-4-7` | 69,035 | 24,241 | 54.12% |
+| `claude-opus-4-6` | 53,955 | 9,161 | 20.45% |
 
-Fresh Fable findings:
+Findings:
 
-- Fable 5.1: **68,940** input tokens; Fable 5: **68,878**.
-- Fable 5.1 reports **62 more tokens (+0.09%)**, exactly **two more on every fixture**. This constant offset is consistent with request-formatting overhead, but the counts alone do not establish its cause or tokenizer identity.
-- Fable 5 matches its previous count on all 31 fixtures.
-- These are raw-text count-endpoint observations, with no generation or billed-usage validation. The report's zero pass/fail summary means no inference-usage checks ran; it does **not** mean every provider measurement succeeded.
+- **GPT-5.6 Sol, Terra, Luna, and GPT-6 Astra match GPT-5.5 exactly on every one of the 31 fixtures**, not just in aggregate: **44,794** tokens each. This corpus shows no input-count increase for the new GPT models.
+- **Fable 5.1 reports 68,940 tokens**, compared with **68,878 for Fable 5**: **62 more (+0.09%)**, exactly **two more on every fixture**. This constant offset is consistent with request-formatting overhead, but these counts alone do not establish its cause.
+- Fable 5.1 reports **53.90% more** tokens than GPT-5.5 on this corpus; Fable 5 reports **53.77% more**.
+- Fresh Fable 5 and Opus 4.8 counts match on all 31 fixtures. GPT-5.5, Fable 5, and the three Opus models also match their previously recorded per-fixture counts.
+- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was checked separately across all 310 measurements.
 
-To complete the GPT measurements, replace `OPENAI_API_KEY` in the project-local `.env`, then run a fresh full-set count-only report:
+To repeat the full-set count-only measurement:
 
 ```bash
 python3 verify_token_counts.py --counts-only \
   --report results/no-benchmark-report.json \
-  --out results/verification-counts-only-completed.json
+  --out results/verification-counts-only-rerun.json
 ```
 
-Use a nonexistent `--report` path as shown so an old benchmark report cannot override the configured model list. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. This command refreshes the baseline and all comparison models too; do not relabel this partial artifact as complete without fresh successful measurements.
+Use a nonexistent `--report` path as shown so an old benchmark report cannot override the configured model list. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. The published report additionally records fixture hashes and run timestamps; the standard CLI emits the measurement data without that provenance block.
+
+The [earlier partial run](results/verification-counts-only-2026-09-05.json) is retained for audit history only. Its OpenAI authentication failure has been resolved, and the completed report above supersedes its unavailable GPT entries and reused historical comparison counts.
 
 ### Historical results (2026-07-03)
 
