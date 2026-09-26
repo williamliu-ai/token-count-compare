@@ -1,6 +1,6 @@
 # token-count-compare
 
-A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra, Claude Fable 5.1/5, and Claude Opus 4.8/4.7/4.6 on identical, user-controlled text.
+A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra/Sol/Luna, Claude Opus 5.5/5, Claude Fable 5.1/5, and Claude Opus 4.8/4.7/4.6 on identical, user-controlled text.
 
 The goal is to produce evidence for whether input-side token accounting appears shared, similar, or materially different across these model configurations — without speculating about the underlying tokenizers.
 
@@ -123,6 +123,10 @@ MODELS = [
     "gpt-5.6-terra",
     "gpt-5.6-luna",
     "gpt-6-astra",
+    "gpt-6-sol",
+    "gpt-6-luna",
+    "claude-opus-5-5",
+    "claude-opus-5",
     "claude-fable-5-1",
     "claude-fable-5",
     "claude-opus-4-8",
@@ -131,7 +135,7 @@ MODELS = [
 ]
 ```
 
-Model IDs were checked against the [OpenAI model catalog](https://developers.openai.com/api/docs/models) and [Claude Fable 5.1 documentation](https://platform.claude.com/docs/en/models/fable-5-1/overview) on 2026-09-05. GPT-6 uses `gpt-6-astra`; Fable 5.1 uses `claude-fable-5-1`. Fable 5 was already configured and remains in the comparison.
+Model IDs are verified against the providers' own live model-list endpoints (`client.models.list()` for both Anthropic and OpenAI) rather than transcribed from documentation. The set was last reconciled on **2026-09-26**, which is where `gpt-6-sol`, `gpt-6-luna`, `claude-opus-5-5`, and `claude-opus-5` came from — the live catalogs listed them alongside the already-configured `gpt-6-astra`. Anthropic exposes Opus 5.5 as `claude-opus-5-5` and Opus 5 as `claude-opus-5`; OpenAI's GPT-6 family is `gpt-6-astra` / `gpt-6-sol` / `gpt-6-luna`.
 
 **The `.env` variables:**
 
@@ -284,9 +288,14 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The **2026-09-05 completed count-only run** freshly measured all ten configured models across all 31 fixtures: **310 successful provider counts, zero provider errors**. This includes GPT-5.6 Sol/Terra/Luna, GPT-6 Astra, and Fable 5.1, plus a fresh Fable 5 measurement and fresh baseline/Opus comparisons. No historical counts were reused.
+The **2026-09-26 count-only run** freshly measured all **fourteen** configured models across all 31 fixtures: **434 successful provider counts, zero provider errors**. This run adds GPT-6 Sol, GPT-6 Luna, Claude Opus 5.5, and Claude Opus 5 to the set and re-measures every previously covered model from scratch. No historical counts were reused.
 
-The checked-in [completed measurement report](results/verification-counts-only-2026-09-05-completed.json) records per-fixture counts, current fixture SHA-256 hashes, start/completion timestamps, and measurement provenance. Its fixture hashes match the earlier partial run exactly.
+The checked-in [measurement report](results/verification-counts-only-2026-09-26.json) records per-fixture counts, fixture SHA-256 hashes, start/completion timestamps, and measurement provenance.
+
+Two independent validity checks hold for this run:
+
+- All **31 fixture hashes are identical** to those in the 2026-09-05 report, so the corpus did not change between runs.
+- All **ten previously measured models reproduce their earlier corpus totals exactly** (GPT-5.5 44,794; Fable 5.1 68,940; Fable 5 / Opus 4.8 68,878; Opus 4.7 69,035; Opus 4.6 53,955). The four new models are therefore measured against a harness that demonstrably reproduces its prior output.
 
 | Model | Corpus input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
 |---|---:|---:|---:|
@@ -295,6 +304,10 @@ The checked-in [completed measurement report](results/verification-counts-only-2
 | `gpt-5.6-terra` | 44,794 | 0 | 0.00% |
 | `gpt-5.6-luna` | 44,794 | 0 | 0.00% |
 | `gpt-6-astra` | 44,794 | 0 | 0.00% |
+| `gpt-6-sol` | 44,794 | 0 | 0.00% |
+| `gpt-6-luna` | 44,794 | 0 | 0.00% |
+| `claude-opus-5-5` | 68,940 | 24,146 | 53.90% |
+| `claude-opus-5` | 68,878 | 24,084 | 53.77% |
 | `claude-fable-5-1` | 68,940 | 24,146 | 53.90% |
 | `claude-fable-5` | 68,878 | 24,084 | 53.77% |
 | `claude-opus-4-8` | 68,878 | 24,084 | 53.77% |
@@ -303,11 +316,13 @@ The checked-in [completed measurement report](results/verification-counts-only-2
 
 Findings:
 
-- **GPT-5.6 Sol, Terra, Luna, and GPT-6 Astra match GPT-5.5 exactly on every one of the 31 fixtures**, not just in aggregate: **44,794** tokens each. This corpus shows no input-count increase for the new GPT models.
-- **Fable 5.1 reports 68,940 tokens**, compared with **68,878 for Fable 5**: **62 more (+0.09%)**, exactly **two more on every fixture**. This constant offset is consistent with request-formatting overhead, but these counts alone do not establish its cause.
-- Fable 5.1 reports **53.90% more** tokens than GPT-5.5 on this corpus; Fable 5 reports **53.77% more**.
-- Fresh Fable 5 and Opus 4.8 counts match on all 31 fixtures. GPT-5.5, Fable 5, and the three Opus models also match their previously recorded per-fixture counts.
-- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was checked separately across all 310 measurements.
+- **The whole GPT line is flat.** All **seven** GPT models — 5.5, 5.6 Sol/Terra/Luna, and 6 Astra/Sol/Luna — report **44,794** tokens, matching each other on **every one of the 31 fixtures**, not just in aggregate. On this corpus the GPT-6 generation introduces no input-count change whatsoever.
+- **Opus 5.5 matches Fable 5.1 exactly, on all 31 of 31 fixtures** (e.g. `01_plain_prose.txt` 1,516/1,516; `S2_long_structured.json` 15,666/15,666) — 68,940 tokens each.
+- **Opus 5 matches both Fable 5 and Opus 4.8 exactly, on all 31 of 31 fixtures** — 68,878 tokens each.
+- **Opus 5.5 reports exactly two more tokens than Opus 5 on every single fixture** (+62, +0.09% over the corpus). This is the same constant per-fixture offset that separates Fable 5.1 from Fable 5, consistent with a small fixed request-formatting overhead — though these counts alone do not establish its cause.
+- **The Opus 5 generation did not move input-side accounting.** Opus 5.5 and Opus 5 land on the same ~53.8–53.9% plateau above GPT-5.5 that Opus 4.8 and Fable 5 already occupied, and both sit marginally *below* Opus 4.7 (3–4 and 5–6 fewer tokens per fixture respectively). The only material shift in this whole history remains the **4.6 → 4.7 step**.
+- Planning consequence: treat Opus 5.5 / 5 input-token cost as **unchanged** from Opus 4.8 / Fable 5, and expect **no input-side saving** from moving onto GPT-6.
+- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was confirmed across all 434 measurements.
 
 To repeat the full-set count-only measurement:
 
@@ -319,7 +334,9 @@ python3 verify_token_counts.py --counts-only \
 
 Use a nonexistent `--report` path as shown so an old benchmark report cannot override the configured model list. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. The published report additionally records fixture hashes and run timestamps; the standard CLI emits the measurement data without that provenance block.
 
-The [earlier partial run](results/verification-counts-only-2026-09-05.json) is retained for audit history only. Its OpenAI authentication failure has been resolved, and the completed report above supersedes its unavailable GPT entries and reused historical comparison counts.
+### Historical results (2026-09-05)
+
+The **2026-09-05 completed count-only run** measured the then-current ten models across the same 31 fixtures: **310 successful provider counts, zero provider errors**, in [`results/verification-counts-only-2026-09-05-completed.json`](results/verification-counts-only-2026-09-05-completed.json). Every one of its totals is reproduced by the 2026-09-26 run above, which supersedes it. The [earlier partial run](results/verification-counts-only-2026-09-05.json) is retained for audit history only; its OpenAI authentication failure was resolved before the completed run.
 
 ### Historical results (2026-07-03)
 
