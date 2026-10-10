@@ -40,6 +40,7 @@ class ModelConfigurationTests(unittest.TestCase):
     def test_provider_inference(self) -> None:
         self.assertEqual(provider_for_model("claude-opus-4-8"), "anthropic")
         self.assertEqual(provider_for_model("gpt-5.5"), "openai")
+        self.assertEqual(provider_for_model("muse-spark-1.3"), "meta")
         with self.assertRaises(ValueError):
             provider_for_model("mistral-large")
 

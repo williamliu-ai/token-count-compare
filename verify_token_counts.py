@@ -83,6 +83,23 @@ def openai_input_tokens_count(model: str, text: str, api_key: str | None) -> Bas
         return Baseline("provider_count_tokens", "openai.responses.input_tokens.count", None, "unavailable", str(exc))
 
 
+def meta_input_tokens_count(model: str, text: str, api_key: str | None) -> Baseline:
+    endpoint = "meta.responses.input_tokens"
+    if not api_key:
+        return Baseline("provider_count_tokens", endpoint, None, "unavailable", f"MUSE_API_KEY missing in {PROJECT_ENV_PATH}")
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=api_key, base_url="https://api.meta.ai/v1")
+        result = client.post("/responses/input_tokens", body={"model": model, "input": text}, cast_to=object)
+        tokens = result["input_tokens"]
+        if not isinstance(tokens, int) or isinstance(tokens, bool) or tokens < 0:
+            raise ValueError("Meta returned an invalid input_tokens count")
+        return Baseline("provider_count_tokens", endpoint, tokens, "official Meta provider-side count for Responses input; no generation")
+    except Exception as exc:
+        return Baseline("provider_count_tokens", endpoint, None, "unavailable", str(exc))
+
+
 def openai_tiktoken_count(model: str, text: str) -> Baseline:
     try:
         import tiktoken
@@ -98,11 +115,13 @@ def openai_tiktoken_count(model: str, text: str) -> Baseline:
         return Baseline("local_tokenizer", "tiktoken", None, "unavailable", str(exc))
 
 
-def count_tokens_for_model(spec: ModelSpec, text: str, anthropic_api_key: str | None, openai_api_key: str | None) -> Baseline:
+def count_tokens_for_model(spec: ModelSpec, text: str, anthropic_api_key: str | None, openai_api_key: str | None, meta_api_key: str | None = None) -> Baseline:
     if spec.provider == "anthropic":
         return anthropic_count_tokens(spec.model, text, anthropic_api_key)
     if spec.provider == "openai":
         return openai_input_tokens_count(spec.model, text, openai_api_key)
+    if spec.provider == "meta":
+        return meta_input_tokens_count(spec.model, text, meta_api_key)
     return Baseline("provider_count_tokens", spec.provider, None, "unavailable", f"unknown provider {spec.provider}")
 
 
@@ -145,13 +164,14 @@ def provider_counts_for_text(
     text: str,
     anthropic_api_key: str | None,
     openai_api_key: str | None,
+    meta_api_key: str | None = None,
 ) -> dict[str, Any]:
     counts: dict[str, Any] = {}
     first_openai_model: str | None = None
     first_openai_tokens: int | None = None
 
     for spec in specs:
-        baseline_count = count_tokens_for_model(spec, text, anthropic_api_key, openai_api_key)
+        baseline_count = count_tokens_for_model(spec, text, anthropic_api_key, openai_api_key, meta_api_key)
         counts[spec.model] = asdict(baseline_count)
         if spec.provider == "openai" and first_openai_model is None:
             first_openai_model = spec.model
@@ -171,11 +191,12 @@ def verify(
     counts_only: bool = False,
 ) -> dict[str, Any]:
     env = load_project_env()
-    report = load_report(report_path)
+    report = None if counts_only else load_report(report_path)
     specs = build_specs(report, env)
     baseline = baseline_model(specs)
     anthropic_api_key = env.get("ANTHROPIC_API_KEY")
     openai_api_key = env.get("OPENAI_API_KEY")
+    meta_api_key = env.get("MUSE_API_KEY")
     # The full-prompt provider calls are only meaningful when we are validating
     # a previous benchmark run. Without a report, or when the operator passes
     # --counts-only, skip them so the workflow stays purely count-only.
@@ -185,11 +206,11 @@ def verify(
     for fixture in sorted(p for p in fixtures_dir.iterdir() if p.is_file() and p.suffix in FIXTURE_EXTENSIONS):
         text = fixture.read_text(encoding="utf-8")
         full_prompt = build_prompt(text)
-        text_counts = provider_counts_for_text(specs, text, anthropic_api_key, openai_api_key)
+        text_counts = provider_counts_for_text(specs, text, anthropic_api_key, openai_api_key, meta_api_key)
         prompt_counts = (
             None
             if skip_full_prompt
-            else provider_counts_for_text(specs, full_prompt, anthropic_api_key, openai_api_key)
+            else provider_counts_for_text(specs, full_prompt, anthropic_api_key, openai_api_key, meta_api_key)
         )
         provider_tokens = [
             text_counts.get(spec.model, {}).get("tokens")
@@ -244,7 +265,7 @@ def verify(
     result = {
         "models": [spec.model for spec in specs],
         "baseline": baseline,
-        "report_compared": str(report_path) if report_path else None,
+        "report_compared": str(report_path) if report is not None else None,
         "tolerance_tokens": tolerance,
         "summary": {"pass": checks.count("pass"), "fail": checks.count("fail"), "skip": checks.count("skip")},
         "recommendation": {

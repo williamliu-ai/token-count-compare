@@ -1,10 +1,10 @@
 # token-count-compare
 
-A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra/Sol/Luna, Claude Opus 5.5/5, Claude Fable 5.1/5, and Claude Opus 4.8/4.7/4.6 on identical, user-controlled text.
+A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra/Sol/Luna, Claude Opus 5.5/5, Claude Fable 5.1/5, Claude Opus 4.8/4.7/4.6, and Meta Muse Spark 1.3 on identical, user-controlled text.
 
 The goal is to produce evidence for whether input-side token accounting appears shared, similar, or materially different across these model configurations — without speculating about the underlying tokenizers.
 
-The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **every model is measured against a single baseline model** — `gpt-5.5` by default, overridable via `BASELINE_MODEL` in this project's `.env`. There are no per-provider model variables; provider is inferred from each model id (`claude…` → Anthropic, `gpt…` → OpenAI).
+The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **every model is measured against a single baseline model** — `gpt-5.5` by default, overridable via `BASELINE_MODEL` in this project's `.env`. There are no per-provider model variables; provider is inferred from each model id (`claude…` → Anthropic, `gpt…` → OpenAI, `muse-spark…` → Meta).
 
 ## Table of contents
 
@@ -28,7 +28,7 @@ The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **eve
 
 Two scripts, two measurement surfaces:
 
-1. **`verify_token_counts.py`** *(recommended; free)* — counts tokens *without* generation, using the official provider count endpoints (`messages.count_tokens` for Anthropic, `responses.input_tokens.count` for OpenAI). This is the cleanest cross-model baseline and the default workflow.
+1. **`verify_token_counts.py`** *(recommended; free)* — counts tokens *without* generation, using the official provider count endpoints (`messages.count_tokens` for Anthropic, `responses.input_tokens.count` for OpenAI, and `/responses/input_tokens` for Meta). This is the cleanest cross-model baseline and the default workflow.
 2. **`compare_tokens.py`** *(optional; paid)* — sends an "ingest-only" prompt against each configured model's chat/completion API for every fixture file and records the provider-reported `input_tokens` / `output_tokens` / `total_tokens`. Use this only when you specifically want to confirm that the free count endpoints match real billed usage. It costs money because it makes generation requests for every configured model.
 
 Design choices worth noting:
@@ -41,11 +41,12 @@ Design choices worth noting:
 
 ## Endpoint cost summary
 
-Use the count endpoints for normal research runs. They count input tokens without generating model output and are documented as free. Use the inference endpoints only when you intentionally want a paid validation run against real `usage.input_tokens`.
+Use the count endpoints for normal research runs. They count input tokens without generating model output. Anthropic and OpenAI document their count endpoints as free; the Meta count requests here generate no output. Use the inference endpoints only when you intentionally want a paid validation run against real `usage.input_tokens`.
 
 | Provider | Free token-count endpoint | Used by | Paid inference endpoint | Used by |
 |---|---|---|---|---|
 | Anthropic / configured Claude models | `POST /v1/messages/count_tokens` (`client.messages.count_tokens(...)`) | `verify_token_counts.py` | `POST /v1/messages` (`client.messages.create(...)`) | `compare_tokens.py` |
+| Meta / Muse Spark | `POST /v1/responses/input_tokens` | `verify_token_counts.py` | `POST /v1/responses` | `compare_tokens.py` |
 | OpenAI / GPT | `POST /v1/responses/input_tokens` (`client.responses.input_tokens.count(...)`) | `verify_token_counts.py` | `POST /v1/responses` (`client.responses.create(...)`) | `compare_tokens.py` |
 
 Cost rule of thumb:
@@ -132,6 +133,7 @@ MODELS = [
     "claude-opus-4-8",
     "claude-opus-4-7",
     "claude-opus-4-6",
+    "muse-spark-1.3",
 ]
 ```
 
@@ -143,6 +145,7 @@ Model IDs are verified against the providers' own live model-list endpoints (`cl
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Anthropic API key | — (required for `claude-*` calls) |
 | `OPENAI_API_KEY` | OpenAI API key | — (required for `gpt-*` calls) |
+| `MUSE_API_KEY` | Meta Model API key | — (required for `muse-spark-*` calls) |
 | `BASELINE_MODEL` | The model every other model is compared against. Must be one of `MODELS`. | `gpt-5.5` |
 
 There are no per-provider model variables (`CLAUDE_MODEL`, `OPENAI_MODEL`, …) — they were removed in favor of `MODELS` + `BASELINE_MODEL`. A `BASELINE_MODEL` that is not in `MODELS` raises a clear error. Missing credentials are surfaced as per-provider errors in the JSON output rather than aborting the run, so partial benchmarks remain useful.
@@ -288,14 +291,14 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The **2026-09-26 count-only run** freshly measured all **fourteen** configured models across all 31 fixtures: **434 successful provider counts, zero provider errors**. This run adds GPT-6 Sol, GPT-6 Luna, Claude Opus 5.5, and Claude Opus 5 to the set and re-measures every previously covered model from scratch. No historical counts were reused.
+The **2026-10-10 count-only run** freshly measured all **fifteen** configured models across all 31 fixtures: **465 successful provider counts, zero provider errors**. This run adds Meta Muse Spark 1.3 to the set and re-measures every previously covered model from scratch. No historical counts were reused.
 
-The checked-in [measurement report](results/verification-counts-only-2026-09-26.json) records per-fixture counts, fixture SHA-256 hashes, start/completion timestamps, and measurement provenance.
+The checked-in [measurement report](results/verification-counts-only-2026-10-10.json) records per-fixture counts, fixture SHA-256 hashes, start/completion timestamps, and measurement provenance.
 
 Two independent validity checks hold for this run:
 
-- All **31 fixture hashes are identical** to those in the 2026-09-05 report, so the corpus did not change between runs.
-- All **ten previously measured models reproduce their earlier corpus totals exactly** (GPT-5.5 44,794; Fable 5.1 68,940; Fable 5 / Opus 4.8 68,878; Opus 4.7 69,035; Opus 4.6 53,955). The four new models are therefore measured against a harness that demonstrably reproduces its prior output.
+- All **31 fixture hashes are identical** to those in the 2026-09-26 report.
+- All **fourteen previously measured models reproduce their earlier counts exactly on every fixture**. No historical measurements were reused.
 
 | Model | Corpus input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
 |---|---:|---:|---:|
@@ -313,8 +316,11 @@ Two independent validity checks hold for this run:
 | `claude-opus-4-8` | 68,878 | 24,084 | 53.77% |
 | `claude-opus-4-7` | 69,035 | 24,241 | 54.12% |
 | `claude-opus-4-6` | 53,955 | 9,161 | 20.45% |
+| `muse-spark-1.3` | 49,483 | 4,689 | 10.47% |
 
 Findings:
+
+- **Muse Spark 1.3 reports 49,483 corpus input tokens: 4,689 more than GPT-5.5 (+10.47%).** It reports fewer total tokens than every configured Claude model. These are provider request counts, including any provider formatting overhead; they do not isolate raw tokenizer efficiency. Muse reports 109–191 extra tokens on 30 fixtures and only one extra token on the CJK fixture. The mostly similar absolute differences are consistent with request overhead contributing to the gap, but this run does not determine its cause or a universal percentage multiplier.
 
 - **The whole GPT line is flat.** All **seven** GPT models — 5.5, 5.6 Sol/Terra/Luna, and 6 Astra/Sol/Luna — report **44,794** tokens, matching each other on **every one of the 31 fixtures**, not just in aggregate. On this corpus the GPT-6 generation introduces no input-count change whatsoever.
 - **Opus 5.5 matches Fable 5.1 exactly, on all 31 of 31 fixtures** (e.g. `01_plain_prose.txt` 1,516/1,516; `S2_long_structured.json` 15,666/15,666) — 68,940 tokens each.
@@ -322,7 +328,7 @@ Findings:
 - **Opus 5.5 reports exactly two more tokens than Opus 5 on every single fixture** (+62, +0.09% over the corpus). This is the same constant per-fixture offset that separates Fable 5.1 from Fable 5, consistent with a small fixed request-formatting overhead — though these counts alone do not establish its cause.
 - **The Opus 5 generation did not move input-side accounting.** Opus 5.5 and Opus 5 land on the same ~53.8–53.9% plateau above GPT-5.5 that Opus 4.8 and Fable 5 already occupied, and both sit marginally *below* Opus 4.7 (3–4 and 5–6 fewer tokens per fixture respectively). The only material shift in this whole history remains the **4.6 → 4.7 step**.
 - Planning consequence: treat Opus 5.5 / 5 input-token cost as **unchanged** from Opus 4.8 / Fable 5, and expect **no input-side saving** from moving onto GPT-6.
-- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was confirmed across all 434 measurements.
+- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was confirmed across all 465 measurements.
 
 To repeat the full-set count-only measurement:
 
@@ -332,11 +338,11 @@ python3 verify_token_counts.py --counts-only \
   --out results/verification-counts-only-rerun.json
 ```
 
-Use a nonexistent `--report` path as shown so an old benchmark report cannot override the configured model list. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. The published report additionally records fixture hashes and run timestamps; the standard CLI emits the measurement data without that provenance block.
+`--counts-only` uses the configured model list and ignores historical benchmark reports. Inspect every model's `error` and `tokens` fields: the current CLI exit status reflects benchmark-usage mismatches, not provider availability. The published report additionally records fixture hashes and run timestamps; the standard CLI emits the measurement data without that provenance block.
 
 ### Historical results (2026-09-05)
 
-The **2026-09-05 completed count-only run** measured the then-current ten models across the same 31 fixtures: **310 successful provider counts, zero provider errors**, in [`results/verification-counts-only-2026-09-05-completed.json`](results/verification-counts-only-2026-09-05-completed.json). Every one of its totals is reproduced by the 2026-09-26 run above, which supersedes it. The [earlier partial run](results/verification-counts-only-2026-09-05.json) is retained for audit history only; its OpenAI authentication failure was resolved before the completed run.
+The **2026-09-05 completed count-only run** measured the then-current ten models across the same 31 fixtures: **310 successful provider counts, zero provider errors**, in [`results/verification-counts-only-2026-09-05-completed.json`](results/verification-counts-only-2026-09-05-completed.json). Every one of its totals is reproduced by the 2026-10-10 run above, which supersedes it. The [earlier partial run](results/verification-counts-only-2026-09-05.json) is retained for audit history only; its OpenAI authentication failure was resolved before the completed run.
 
 ### Historical results (2026-07-03)
 
@@ -458,3 +464,15 @@ These cover content types missing from the original set: structured data, Markdo
 ## License
 
 MIT. See `LICENSE`.
+
+## Muse Spark support
+
+`muse-spark-1.3` uses Meta Model API at `https://api.meta.ai/v1` with
+`MUSE_API_KEY` from this project's local `.env`. The counts-only workflow sends
+raw fixture text to `POST /v1/responses/input_tokens`, without generation.
+The optional paid comparison uses Meta's Responses API with the same ingest prompt.
+Missing credentials are reported as unavailable; they are never replaced by local estimates.
+
+Sources: [Meta model catalog](https://dev.meta.ai/docs/models) and
+[Meta token-count recipe](https://dev.meta.ai/docs/cookbook/long-context), checked 2026-10-10.
+Muse Spark 1.3 availability was confirmed against Meta's live model catalog on 2026-10-10.

@@ -41,6 +41,7 @@ MODELS = [
     "claude-opus-4-8",
     "claude-opus-4-7",
     "claude-opus-4-6",
+    "muse-spark-1.3",
 ]
 # The model every other model is measured against. Override per-checkout via the
 # BASELINE_MODEL entry in this project's .env. Must be one of MODELS.
@@ -121,7 +122,7 @@ def load_project_env() -> dict[str, str]:
 def provider_for_model(model: str) -> str:
     """Infer the API provider from a model id.
 
-    The benchmark only talks to two providers, distinguished by their well-known
+    The benchmark talks to three providers, distinguished by their well-known
     model-name prefixes. An unrecognized prefix is a configuration error rather
     than a silent default, so it raises.
     """
@@ -129,7 +130,9 @@ def provider_for_model(model: str) -> str:
         return "anthropic"
     if model.startswith("gpt"):
         return "openai"
-    raise ValueError(f"cannot infer provider for model {model!r}; expected a 'claude…' or 'gpt…' id")
+    if model.startswith("muse-spark"):
+        return "meta"
+    raise ValueError(f"cannot infer provider for model {model!r}; expected a 'claude…', 'gpt…', or 'muse-spark…' id")
 
 
 def resolve_baseline(env: dict[str, str]) -> str:
@@ -210,13 +213,13 @@ def call_claude(model: str, text: str, api_key: str | None) -> UsageResult:
         return UsageResult(model, None, None, None, "", error=str(exc))
 
 
-def call_openai(model: str, text: str, api_key: str | None) -> UsageResult:
+def call_openai(model: str, text: str, api_key: str | None, *, base_url: str | None = None, key_name: str = "OPENAI_API_KEY") -> UsageResult:
     try:
         from openai import OpenAI
 
         if not api_key:
-            return UsageResult(model, None, None, None, "", error=f"OPENAI_API_KEY missing in {PROJECT_ENV_PATH}")
-        client = OpenAI(api_key=api_key)
+            return UsageResult(model, None, None, None, "", error=f"{key_name} missing in {PROJECT_ENV_PATH}")
+        client = OpenAI(api_key=api_key, **({"base_url": base_url} if base_url else {}))
         resp = client.responses.create(
             model=model,
             input=build_prompt(text),
@@ -231,11 +234,13 @@ def call_openai(model: str, text: str, api_key: str | None) -> UsageResult:
         return UsageResult(model, None, None, None, "", error=str(exc))
 
 
-def call_model(spec: ModelSpec, text: str, anthropic_api_key: str | None, openai_api_key: str | None) -> UsageResult:
+def call_model(spec: ModelSpec, text: str, anthropic_api_key: str | None, openai_api_key: str | None, meta_api_key: str | None = None) -> UsageResult:
     if spec.provider == "anthropic":
         return call_claude(spec.model, text, anthropic_api_key)
     if spec.provider == "openai":
         return call_openai(spec.model, text, openai_api_key)
+    if spec.provider == "meta":
+        return call_openai(spec.model, text, meta_api_key, base_url="https://api.meta.ai/v1", key_name="MUSE_API_KEY")
     return UsageResult(spec.model, None, None, None, "", error=f"unknown provider {spec.provider}")
 
 
@@ -283,12 +288,13 @@ def run(fixtures_dir: Path, out: Path) -> dict[str, Any]:
     baseline = baseline_model(specs)
     anthropic_api_key = env.get("ANTHROPIC_API_KEY")
     openai_api_key = env.get("OPENAI_API_KEY")
+    meta_api_key = env.get("MUSE_API_KEY")
 
     cases = []
     for fixture in sorted(p for p in fixtures_dir.iterdir() if p.is_file() and p.suffix in FIXTURE_EXTENSIONS):
         text = fixture.read_text(encoding="utf-8")
         results: dict[str, UsageResult] = {
-            spec.model: call_model(spec, text, anthropic_api_key, openai_api_key) for spec in specs
+            spec.model: call_model(spec, text, anthropic_api_key, openai_api_key, meta_api_key) for spec in specs
         }
         max_reported = None
         for value in (result.input_tokens for result in results.values()):
