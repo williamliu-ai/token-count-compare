@@ -1,10 +1,10 @@
 # token-count-compare
 
-A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra/Sol/Luna, Claude Opus 5.5/5, Claude Fable 5.1/5, Claude Opus 4.8/4.7/4.6, and Meta Muse Spark 1.3 on identical, user-controlled text.
+A small, self-contained benchmark harness for comparing **provider-reported input-token counts** across OpenAI GPT-5.5, GPT-5.6 Sol/Terra/Luna, GPT-6 Astra/Sol/Luna, Claude Opus 5.5/5, Claude Fable 5.1/5, Claude Opus 4.8/4.7/4.6, and Meta Muse Spark 1.3 / Muse Wonder 1.0 on identical, user-controlled text.
 
 The goal is to produce evidence for whether input-side token accounting appears shared, similar, or materially different across these model configurations — without speculating about the underlying tokenizers.
 
-The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **every model is measured against a single baseline model** — `gpt-5.5` by default, overridable via `BASELINE_MODEL` in this project's `.env`. There are no per-provider model variables; provider is inferred from each model id (`claude…` → Anthropic, `gpt…` → OpenAI, `muse-spark…` → Meta).
+The models compared are a flat list (`MODELS` in `compare_tokens.py`), and **every model is measured against a single baseline model** — `gpt-5.5` by default, overridable via `BASELINE_MODEL` in this project's `.env`. There are no per-provider model variables; provider is inferred from each model id (`claude…` → Anthropic, `gpt…` → OpenAI, `muse-…` → Meta).
 
 ## Table of contents
 
@@ -134,10 +134,11 @@ MODELS = [
     "claude-opus-4-7",
     "claude-opus-4-6",
     "muse-spark-1.3",
+    "muse-wonder-1.0",
 ]
 ```
 
-Model IDs are verified against the providers' own live model-list endpoints (`client.models.list()` for both Anthropic and OpenAI) rather than transcribed from documentation. The set was last reconciled on **2026-09-26**, which is where `gpt-6-sol`, `gpt-6-luna`, `claude-opus-5-5`, and `claude-opus-5` came from — the live catalogs listed them alongside the already-configured `gpt-6-astra`. Anthropic exposes Opus 5.5 as `claude-opus-5-5` and Opus 5 as `claude-opus-5`; OpenAI's GPT-6 family is `gpt-6-astra` / `gpt-6-sol` / `gpt-6-luna`.
+Model IDs are verified against the providers' own live model-list endpoints (`client.models.list()` for Anthropic, OpenAI, and Meta) rather than transcribed from documentation. The set was last reconciled on **2026-10-12**, which added `muse-wonder-1.0` from Meta's live catalog. Meta's flagship **Muse Wonder Full is not in the Meta Model API catalog** (it is distributed only to Muse Code subscribers), so it has no API model ID and cannot be measured with this harness; candidate Full IDs were probed and returned `model_not_found`. Anthropic exposes Opus 5.5 as `claude-opus-5-5` and Opus 5 as `claude-opus-5`; OpenAI's GPT-6 family is `gpt-6-astra` / `gpt-6-sol` / `gpt-6-luna`.
 
 **The `.env` variables:**
 
@@ -145,7 +146,7 @@ Model IDs are verified against the providers' own live model-list endpoints (`cl
 |---|---|---|
 | `ANTHROPIC_API_KEY` | Anthropic API key | — (required for `claude-*` calls) |
 | `OPENAI_API_KEY` | OpenAI API key | — (required for `gpt-*` calls) |
-| `MUSE_API_KEY` | Meta Model API key | — (required for `muse-spark-*` calls) |
+| `MUSE_API_KEY` | Meta Model API key | — (required for `muse-*` calls) |
 | `BASELINE_MODEL` | The model every other model is compared against. Must be one of `MODELS`. | `gpt-5.5` |
 
 There are no per-provider model variables (`CLAUDE_MODEL`, `OPENAI_MODEL`, …) — they were removed in favor of `MODELS` + `BASELINE_MODEL`. A `BASELINE_MODEL` that is not in `MODELS` raises a clear error. Missing credentials are surfaced as per-provider errors in the JSON output rather than aborting the run, so partial benchmarks remain useful.
@@ -291,14 +292,14 @@ Why the tiers exist: BPE tokenizers make local merge decisions, so a single byte
 
 ## Latest measured results
 
-The **2026-10-10 count-only run** freshly measured all **fifteen** configured models across all 31 fixtures: **465 successful provider counts, zero provider errors**. This run adds Meta Muse Spark 1.3 to the set and re-measures every previously covered model from scratch. No historical counts were reused.
+The **2026-10-12 count-only run** freshly measured all **sixteen** configured models across all 31 fixtures: **496 successful provider counts, zero provider errors**. This run adds Meta Muse Wonder 1.0 (`muse-wonder-1.0`) to the set and re-measures every previously covered model from scratch. No historical counts were reused. Muse Wonder Full has no Meta Model API ID (Muse Code subscription only), so it is documented here but not measured.
 
-The checked-in [measurement report](results/verification-counts-only-2026-10-10.json) records per-fixture counts, fixture SHA-256 hashes, start/completion timestamps, and measurement provenance.
+The checked-in [measurement report](results/verification-counts-only-2026-10-12.json) records per-fixture counts.
 
 Two independent validity checks hold for this run:
 
-- All **31 fixture hashes are identical** to those in the 2026-09-26 report.
-- All **fourteen previously measured models reproduce their earlier counts exactly on every fixture**. No historical measurements were reused.
+- The **31-fixture set is unchanged** from the 2026-10-10 report.
+- All **fifteen previously measured models reproduce their earlier corpus totals exactly**. No historical measurements were reused.
 
 | Model | Corpus input tokens | Extra tokens vs GPT-5.5 | Extra vs GPT-5.5 |
 |---|---:|---:|---:|
@@ -317,9 +318,11 @@ Two independent validity checks hold for this run:
 | `claude-opus-4-7` | 69,035 | 24,241 | 54.12% |
 | `claude-opus-4-6` | 53,955 | 9,161 | 20.45% |
 | `muse-spark-1.3` | 49,483 | 4,689 | 10.47% |
+| `muse-wonder-1.0` | 49,390 | 4,596 | 10.26% |
 
 Findings:
 
+- **Muse Wonder 1.0 reports 49,390 corpus input tokens: 4,596 more than GPT-5.5 (+10.26%) — and exactly 3 fewer tokens than Muse Spark 1.3 on every one of the 31 fixtures** (−93 corpus-wide, −0.19%). A perfectly constant offset like this is consistent with a small fixed request-formatting difference; these counts alone do not prove tokenizer identity or its cause. Wonder reports fewer total tokens than every configured Claude model. **Muse Wonder Full could not be measured**: it has no Meta Model API ID and is available only to Muse Code subscribers, so no provider count endpoint exists for it in this harness.
 - **Muse Spark 1.3 reports 49,483 corpus input tokens: 4,689 more than GPT-5.5 (+10.47%).** It reports fewer total tokens than every configured Claude model. These are provider request counts, including any provider formatting overhead; they do not isolate raw tokenizer efficiency. Muse reports 109–191 extra tokens on 30 fixtures and only one extra token on the CJK fixture. The mostly similar absolute differences are consistent with request overhead contributing to the gap, but this run does not determine its cause or a universal percentage multiplier.
 
 - **The whole GPT line is flat.** All **seven** GPT models — 5.5, 5.6 Sol/Terra/Luna, and 6 Astra/Sol/Luna — report **44,794** tokens, matching each other on **every one of the 31 fixtures**, not just in aggregate. On this corpus the GPT-6 generation introduces no input-count change whatsoever.
@@ -328,7 +331,7 @@ Findings:
 - **Opus 5.5 reports exactly two more tokens than Opus 5 on every single fixture** (+62, +0.09% over the corpus). This is the same constant per-fixture offset that separates Fable 5.1 from Fable 5, consistent with a small fixed request-formatting overhead — though these counts alone do not establish its cause.
 - **The Opus 5 generation did not move input-side accounting.** Opus 5.5 and Opus 5 land on the same ~53.8–53.9% plateau above GPT-5.5 that Opus 4.8 and Fable 5 already occupied, and both sit marginally *below* Opus 4.7 (3–4 and 5–6 fewer tokens per fixture respectively). The only material shift in this whole history remains the **4.6 → 4.7 step**.
 - Planning consequence: treat Opus 5.5 / 5 input-token cost as **unchanged** from Opus 4.8 / Fable 5, and expect **no input-side saving** from moving onto GPT-6.
-- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was confirmed across all 465 measurements.
+- These are raw-text count-endpoint observations, with no generation or billed-usage validation. Equal counts do not establish tokenizer identity, and corpus totals do not imply a universal multiplier for other content. The report's zero pass/fail summary means no inference-usage checks ran; provider availability was confirmed across all 496 measurements.
 
 To repeat the full-set count-only measurement:
 
@@ -465,14 +468,18 @@ These cover content types missing from the original set: structured data, Markdo
 
 MIT. See `LICENSE`.
 
-## Muse Spark support
+## Meta Muse support
 
-`muse-spark-1.3` uses Meta Model API at `https://api.meta.ai/v1` with
+`muse-spark-1.3` and `muse-wonder-1.0` use the Meta Model API at `https://api.meta.ai/v1` with
 `MUSE_API_KEY` from this project's local `.env`. The counts-only workflow sends
 raw fixture text to `POST /v1/responses/input_tokens`, without generation.
 The optional paid comparison uses Meta's Responses API with the same ingest prompt.
 Missing credentials are reported as unavailable; they are never replaced by local estimates.
 
+**Muse Wonder Full is not measurable here.** It is distributed only to Muse Code
+subscribers and does not appear in the Meta Model API catalog, so there is no API model ID
+to count. Do not add a guessed Full ID to `MODELS`: probed candidates returned `model_not_found`.
+
 Sources: [Meta model catalog](https://dev.meta.ai/docs/models) and
-[Meta token-count recipe](https://dev.meta.ai/docs/cookbook/long-context), checked 2026-10-10.
-Muse Spark 1.3 availability was confirmed against Meta's live model catalog on 2026-10-10.
+[Meta token-count recipe](https://dev.meta.ai/docs/cookbook/long-context), checked 2026-10-12.
+Muse Wonder 1.0 availability was confirmed against Meta's live model catalog on 2026-10-12.

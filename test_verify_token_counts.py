@@ -34,6 +34,7 @@ class VerifyModelListTests(unittest.TestCase):
             "claude-opus-4-7": 150,
             "claude-opus-4-6": 120,
             "muse-spark-1.3": 130,
+            "muse-wonder-1.0": 125,
         }
 
         def fake_provider_counts(specs, text, anthropic_api_key, openai_api_key, meta_api_key=None):

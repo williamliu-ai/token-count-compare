@@ -41,6 +41,7 @@ class ModelConfigurationTests(unittest.TestCase):
         self.assertEqual(provider_for_model("claude-opus-4-8"), "anthropic")
         self.assertEqual(provider_for_model("gpt-5.5"), "openai")
         self.assertEqual(provider_for_model("muse-spark-1.3"), "meta")
+        self.assertEqual(provider_for_model("muse-wonder-1.0"), "meta")
         with self.assertRaises(ValueError):
             provider_for_model("mistral-large")
 

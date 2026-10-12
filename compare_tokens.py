@@ -42,6 +42,7 @@ MODELS = [
     "claude-opus-4-7",
     "claude-opus-4-6",
     "muse-spark-1.3",
+    "muse-wonder-1.0",
 ]
 # The model every other model is measured against. Override per-checkout via the
 # BASELINE_MODEL entry in this project's .env. Must be one of MODELS.
@@ -130,9 +131,9 @@ def provider_for_model(model: str) -> str:
         return "anthropic"
     if model.startswith("gpt"):
         return "openai"
-    if model.startswith("muse-spark"):
+    if model.startswith("muse-"):
         return "meta"
-    raise ValueError(f"cannot infer provider for model {model!r}; expected a 'claude…', 'gpt…', or 'muse-spark…' id")
+    raise ValueError(f"cannot infer provider for model {model!r}; expected a 'claude…', 'gpt…', or 'muse-…' id")
 
 
 def resolve_baseline(env: dict[str, str]) -> str:
